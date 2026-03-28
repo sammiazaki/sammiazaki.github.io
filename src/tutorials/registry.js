@@ -18,6 +18,23 @@ const tutorials = [
     },
     component: lazy(() => import("./ci-overlap/CIOverlapTutorial.jsx")),
   },
+  {
+    slug: "distributions",
+    title: "Probability Distributions",
+    description:
+      "A comprehensive interactive guide to discrete and continuous distributions, their parameters, shapes, and the Central Limit Theorem.",
+    date: "2026-03-29",
+    tags: [
+      "probability",
+      "distributions",
+      "normal",
+      "binomial",
+      "poisson",
+      "CLT",
+      "beta",
+    ],
+    component: lazy(() => import("./distributions/DistributionsTutorial.jsx")),
+  },
 ];
 
 export default tutorials;

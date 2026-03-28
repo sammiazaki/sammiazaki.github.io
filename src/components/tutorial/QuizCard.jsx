@@ -8,7 +8,7 @@ export default function QuizCard({ question, options, correctIndex, explanation 
   const [revealed, setRevealed] = useState(false);
 
   return (
-    <Card className="rounded-2xl shadow-sm">
+    <Card className="rounded-lg shadow-sm">
       <CardHeader>
         <CardTitle className="text-lg">{question}</CardTitle>
       </CardHeader>

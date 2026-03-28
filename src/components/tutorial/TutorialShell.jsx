@@ -18,7 +18,7 @@ export default function TutorialShell({ title, description, intro, lessons, chil
           animate={{ opacity: 1, y: 0 }}
           className="grid gap-4 md:grid-cols-[1.4fr_0.6fr]"
         >
-          <Card className="rounded-3xl shadow-sm">
+          <Card className="rounded-xl shadow-sm">
             <CardHeader>
               <CardTitle className="text-3xl">{title}</CardTitle>
               {description && <CardDescription className="text-base">{description}</CardDescription>}
@@ -28,7 +28,7 @@ export default function TutorialShell({ title, description, intro, lessons, chil
             )}
           </Card>
 
-          <Card className="rounded-3xl shadow-sm">
+          <Card className="rounded-xl shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Progress</CardTitle>
             </CardHeader>

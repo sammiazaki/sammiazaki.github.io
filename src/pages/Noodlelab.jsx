@@ -19,7 +19,7 @@ export default function Noodlelab() {
           >
             <Link
               to={`/noodlelab/${t.slug}`}
-              className="group block rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-slate-300"
+              className="group block rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-slate-300"
             >
               <div className="text-xs text-slate-400 font-mono">{t.date}</div>
               <h2 className="mt-2 text-xl font-semibold group-hover:text-slate-700 transition-colors">

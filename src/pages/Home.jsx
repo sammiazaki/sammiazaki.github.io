@@ -10,7 +10,7 @@ export default function Home() {
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           <Link
             to="/noodlelab"
-            className="group rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-slate-300"
+            className="group rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-slate-300"
           >
             <div className="text-xl font-semibold group-hover:text-slate-700">
               Noodlelab
@@ -23,7 +23,7 @@ export default function Home() {
             href="https://sammiazaki.substack.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="group rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-slate-300"
+            className="group rounded-xl border bg-white p-6 shadow-sm transition hover:shadow-md hover:border-slate-300"
           >
             <div className="text-xl font-semibold group-hover:text-slate-700">
               Writing

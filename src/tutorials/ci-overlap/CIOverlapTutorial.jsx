@@ -9,6 +9,7 @@ import {
   StatCard,
   InfoBox,
   LabeledSlider,
+  Tex,
 } from "@/components/tutorial";
 
 function fmt(x, digits = 3) {
@@ -56,7 +57,7 @@ function LinePlot({ mean1, se1, mean2, se2, confidence }) {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border p-4 bg-white">
+      <div className="rounded-lg border p-4 bg-white">
         <div className="mb-4 flex items-center justify-between text-sm text-slate-600">
           <span>Group-level confidence intervals ({confidence}%)</span>
           <span>Correct test uses 95% CI of the difference</span>
@@ -195,7 +196,7 @@ export default function CIOverlapTutorial() {
         <>
           {step === 0 && (
             <StepContent>
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-2xl">
                     <BarChart3 className="h-6 w-6" /> The common mistake
@@ -234,17 +235,19 @@ export default function CIOverlapTutorial() {
 
           {step === 1 && (
             <StepContent className="grid gap-4 md:grid-cols-2">
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-2xl">What should be tested</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
-                  <InfoBox variant="formula">H₀: Y₁ = Y₂</InfoBox>
-                  <InfoBox title="Incorrect focus" variant="outline">
-                    <div className="font-mono">Ŷ₁ ± 1.96·SE₁ and Ŷ₂ ± 1.96·SE₂</div>
+                  <InfoBox variant="formula">
+                    <Tex display>{"H_0:\\; Y_1 = Y_2"}</Tex>
                   </InfoBox>
-                  <InfoBox title="Correct focus" variant="outline">
-                    <div className="font-mono">(Ŷ₁−Ŷ₂) ± 1.96·√(SE₁² + SE₂²)</div>
+                  <InfoBox title="Incorrect focus" variant="formula">
+                    <Tex display>{"\\hat{Y}_1 \\pm 1.96 \\cdot SE_1 \\quad\\text{and}\\quad \\hat{Y}_2 \\pm 1.96 \\cdot SE_2"}</Tex>
+                  </InfoBox>
+                  <InfoBox title="Correct focus" variant="formula">
+                    <Tex display>{"(\\hat{Y}_1 - \\hat{Y}_2) \\pm 1.96 \\cdot \\sqrt{SE_1^2 + SE_2^2}"}</Tex>
                   </InfoBox>
                   <p>
                     A two-sided 5% test rejects the null when the confidence interval
@@ -253,7 +256,7 @@ export default function CIOverlapTutorial() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-2xl">Current calculations</CardTitle>
                 </CardHeader>
@@ -274,7 +277,7 @@ export default function CIOverlapTutorial() {
                     className="bg-slate-50 border-0"
                   />
                   <div
-                    className={`rounded-2xl p-4 ${significant ? "bg-emerald-50" : "bg-amber-50"}`}
+                    className={`rounded-lg p-4 ${significant ? "bg-emerald-50" : "bg-amber-50"}`}
                   >
                     <div className="font-semibold">Decision</div>
                     <div className="mt-1">
@@ -288,7 +291,7 @@ export default function CIOverlapTutorial() {
 
           {step === 2 && (
             <StepContent className="space-y-4">
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-2xl">Play with overlap</CardTitle>
                 </CardHeader>
@@ -358,7 +361,7 @@ export default function CIOverlapTutorial() {
 
           {step === 3 && (
             <StepContent className="grid gap-4 md:grid-cols-2">
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-2xl">
                     <Sigma className="h-6 w-6" /> Why 83.4% appears
@@ -370,14 +373,14 @@ export default function CIOverlapTutorial() {
                     the 5% level requires:
                   </p>
                   <InfoBox variant="formula">
-                    |X̄₁ − X̄₂| &gt; 1.96·√2·SE ≈ {fmt(equalSEThreshold, 3)}·SE
+                    <Tex display>{`|\\bar{X}_1 - \\bar{X}_2| > 1.96\\sqrt{2}\\cdot SE \\approx ${fmt(equalSEThreshold, 3)}\\cdot SE`}</Tex>
                   </InfoBox>
                   <p>
                     For two displayed intervals to just stop overlapping, each half-width
                     must be half that required separation.
                   </p>
                   <InfoBox variant="formula">
-                    z·SE = (1.96·√2·SE)/2 = 1.385·SE
+                    <Tex display>{"z \\cdot SE = \\frac{1.96\\sqrt{2}\\cdot SE}{2} = 1.385 \\cdot SE"}</Tex>
                   </InfoBox>
                   <p>
                     A z-score of about 1.385 corresponds to an 83.4% two-sided interval.
@@ -389,7 +392,7 @@ export default function CIOverlapTutorial() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-2xl">Interpretation guardrail</CardTitle>
                 </CardHeader>
@@ -452,7 +455,7 @@ export default function CIOverlapTutorial() {
                 correctIndex={2}
                 explanation="The 83.4% result comes from the equal-SE case. It is an approximation, not a general theorem for all designs."
               />
-              <Card className="rounded-3xl shadow-sm">
+              <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-2xl">Takeaway</CardTitle>
                 </CardHeader>
