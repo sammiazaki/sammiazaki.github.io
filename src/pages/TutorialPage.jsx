@@ -11,8 +11,8 @@ export default function TutorialPage() {
     return (
       <div className="mx-auto max-w-6xl px-6 py-20 text-center">
         <h1 className="text-2xl font-semibold">Tutorial not found</h1>
-        <Link to="/" className="mt-4 inline-block text-sm text-slate-500 hover:text-slate-800">
-          Back to tutorials
+        <Link to="/noodlelab" className="mt-4 inline-block text-sm text-slate-500 hover:text-slate-800">
+          Back to Noodlelab
         </Link>
       </div>
     );
@@ -23,9 +23,9 @@ export default function TutorialPage() {
   return (
     <div>
       <div className="mx-auto max-w-6xl px-6 pt-6">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors">
+        <Link to="/noodlelab" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors">
           <ArrowLeft className="h-4 w-4" />
-          All tutorials
+          Noodlelab
         </Link>
       </div>
       <Suspense
