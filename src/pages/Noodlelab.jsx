@@ -10,7 +10,7 @@ export default function Noodlelab() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {tutorials.map((t, i) => (
+        {[...tutorials].sort((a, b) => b.date.localeCompare(a.date)).map((t, i) => (
           <motion.div
             key={t.slug}
             initial={{ opacity: 0, y: 16 }}

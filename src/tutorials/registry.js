@@ -35,6 +35,20 @@ const tutorials = [
     ],
     component: lazy(() => import("./distributions/DistributionsTutorial.jsx")),
   },
+  {
+    slug: "propensity-score",
+    title: "Propensity Score",
+    description:
+      "An interactive guide to propensity scores: selection bias, inverse probability weighting, covariate balance, and positivity.",
+    date: "2026-03-30",
+    tags: ["causal inference", "propensity score", "IPTW", "observational data"],
+    source: {
+      title: "Propensity Score — Causal Inference for the Brave and True",
+      author: "Matheus Facure",
+      url: "https://matheusfacure.github.io/python-causality-handbook/11-Propensity-Score.html",
+    },
+    component: lazy(() => import("./propensity-score/PropensityScoreTutorial.jsx")),
+  },
 ];
 
 export default tutorials;
