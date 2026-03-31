@@ -61,6 +61,7 @@ Flag but don't block:
 - Steps with no interactive elements (all text, no sliders/charts/quizzes)
 - Very long steps that might benefit from splitting
 - InfoBox variants that seem mismatched (e.g., "success" variant for a warning)
+- Generic/abstract labels in charts and prose (e.g., "Treated"/"Untreated", "X", "Y") where the tutorial has a concrete running example that should be used instead (e.g., "Seminar"/"No seminar", "Prior GPA", "assessment score")
 
 ## Output
 Return a structured report:

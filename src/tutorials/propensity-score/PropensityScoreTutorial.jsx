@@ -143,8 +143,8 @@ const PH = H - PAD.top - PAD.bottom;
 function DualHistogram({
   binsA,
   binsB,
-  labelA = "Treated",
-  labelB = "Untreated",
+  labelA = "Seminar",
+  labelB = "No seminar",
   colorA = "#1e293b",
   colorB = "#94a3b8",
   ticks,
@@ -319,21 +319,20 @@ export default function PropensityScoreTutorial() {
                 <CardContent className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
                   <div className="space-y-4 text-slate-700">
                     <p>
-                      In an ideal experiment, treatment is assigned at random, making
-                      the treated and untreated groups comparable. In observational data,
-                      people <em>self-select</em> into treatment.
+                      In an ideal experiment, students would be randomly assigned to
+                      the seminar. In reality, they <em>self-select</em> — motivated
+                      students with higher prior GPAs are more likely to sign up.
                     </p>
                     <p>
-                      Here, students with higher prior achievement (X) are more likely to
-                      join the seminar. Since X also affects the outcome, a simple
-                      comparison of means conflates the treatment effect with the
-                      pre-existing advantage.
+                      Since prior GPA also predicts the assessment score, a simple
+                      comparison of seminar vs. non-seminar students conflates the
+                      seminar's real effect with the pre-existing academic advantage.
                     </p>
                     {confoundingSlider}
                     <InfoBox variant="muted">
-                      At 0, treatment is random — no confounding. As you increase it,
-                      high-X students become much more likely to be treated, and the
-                      naive estimate drifts away from the truth.
+                      At 0, seminar enrollment is random — no confounding. As you
+                      increase it, high-GPA students become much more likely to
+                      enroll, and the naive estimate drifts away from the truth.
                     </InfoBox>
                   </div>
                   <div className="space-y-3">
@@ -341,7 +340,7 @@ export default function PropensityScoreTutorial() {
                       binsA={bins.xBinsT}
                       binsB={bins.xBinsU}
                       ticks={xTicks}
-                      title="Prior achievement (X) by group"
+                      title="Prior GPA by group"
                     />
                     <div className="grid grid-cols-3 gap-2">
                       <StatCard label="Naive ATE" value={fmt(stats.naiveATE)} formula="E[Y|T{=}1] - E[Y|T{=}0]" />
@@ -379,12 +378,12 @@ export default function PropensityScoreTutorial() {
                     <Tex display>{"e(x) = P(T = 1 \\mid X = x)"}</Tex>
                   </InfoBox>
                   <p>
-                    The propensity score is the probability that a unit receives
-                    treatment, given its observed covariates. The crucial insight:
+                    The propensity score is the probability that a student joins
+                    the seminar, given their prior GPA. The crucial insight:
                   </p>
                   <InfoBox variant="dark">
-                    Take two people with the same propensity score — one treated, one
-                    not. The only reason one received treatment is{" "}
+                    Take two students with the same propensity score — one enrolled
+                    in the seminar, one didn't. The only reason one enrolled is{" "}
                     <strong>chance</strong>. Conditioning on the propensity score makes
                     observational data look as good as randomized.
                   </InfoBox>
@@ -453,9 +452,9 @@ export default function PropensityScoreTutorial() {
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
-                    Instead of comparing groups directly, we{" "}
-                    <strong>reweight</strong> each observation to construct a
-                    pseudo-population where treatment is independent of covariates.
+                    Instead of comparing seminar and non-seminar students directly,
+                    we <strong>reweight</strong> each student to construct a
+                    pseudo-population where enrollment is independent of prior GPA.
                   </p>
                   <InfoBox variant="formula" title="IPTW estimator">
                     <Tex display>
@@ -463,15 +462,15 @@ export default function PropensityScoreTutorial() {
                     </Tex>
                   </InfoBox>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <InfoBox variant="outline" title="Treated (T = 1): weight 1 / e(x)">
-                      A treated person with a <em>low</em> propensity score gets high
-                      weight — they look like the untreated group but happened to be
-                      treated. They carry especially useful information.
+                    <InfoBox variant="outline" title="Enrolled (T = 1): weight 1 / e(x)">
+                      A student who joined the seminar despite a <em>low</em> predicted
+                      probability gets high weight — they look like the non-enrollees
+                      but happened to sign up. Especially informative.
                     </InfoBox>
-                    <InfoBox variant="outline" title="Untreated (T = 0): weight 1 / (1 - e(x))">
-                      An untreated person with a <em>high</em> propensity score also
-                      gets high weight — they resemble the treated group but were not
-                      treated. Equally informative.
+                    <InfoBox variant="outline" title="Not enrolled (T = 0): weight 1 / (1 - e(x))">
+                      A student who skipped the seminar despite a <em>high</em> predicted
+                      probability also gets high weight — they resemble enrollees but
+                      didn't join. Equally informative.
                     </InfoBox>
                   </div>
                   <InfoBox variant="muted">
@@ -518,7 +517,7 @@ export default function PropensityScoreTutorial() {
                       binsA={bins.psBinsT}
                       binsB={bins.psBinsU}
                       ticks={psTicks}
-                      title="Propensity score distribution"
+                      title="P(joining seminar | GPA)"
                     />
                     <InfoBox variant={stats.maxObsWeight > 20 ? "warning" : "muted"}>
                       Max weight: {fmt(stats.maxObsWeight, 1)}.
@@ -561,11 +560,11 @@ export default function PropensityScoreTutorial() {
                       binsA={bins.nxBinsT}
                       binsB={bins.nxBinsU}
                       ticks={xTicks}
-                      title="Raw covariate (X) by group"
+                      title="Prior GPA by group (raw)"
                     />
                     <InfoBox variant="warning" className="mt-3">
-                      The treated group has systematically higher X. The groups are
-                      not directly comparable.
+                      Seminar students have systematically higher prior GPAs.
+                      The groups are not directly comparable.
                     </InfoBox>
                   </CardContent>
                 </Card>
@@ -579,11 +578,11 @@ export default function PropensityScoreTutorial() {
                       binsA={bins.wxBinsT}
                       binsB={bins.wxBinsU}
                       ticks={xTicks}
-                      title="Weighted covariate (X) by group"
+                      title="Prior GPA by group (IPTW weighted)"
                     />
                     <InfoBox variant="success" className="mt-3">
-                      After weighting, the distributions align — covariates are
-                      balanced, as if treatment had been randomized.
+                      After weighting, the GPA distributions align — as if
+                      seminar enrollment had been randomized.
                     </InfoBox>
                   </CardContent>
                 </Card>
@@ -613,14 +612,14 @@ export default function PropensityScoreTutorial() {
                     <InfoBox variant="dark" title="Positivity violations">
                       IPTW divides by <Tex>{"e(x)"}</Tex> and{" "}
                       <Tex>{"1{-}e(x)"}</Tex>. When propensity scores cluster near 0
-                      or 1, weights explode. This signals regions of the covariate
-                      space where only one group exists — the method extrapolates
-                      rather than adjusts.
+                      or 1, weights explode. This signals GPA ranges where virtually
+                      all students either join or skip the seminar — the method
+                      extrapolates rather than adjusts.
                     </InfoBox>
                     <InfoBox variant="outline" title="Rule of thumb">
                       Individual weights above 20 are a red flag. This happens when
-                      untreated individuals have propensity above 0.95, or treated
-                      individuals below 0.05.
+                      non-enrollees have propensity above 0.95, or enrollees
+                      below 0.05.
                     </InfoBox>
                     <InfoBox variant="outline" title="Prediction is not balancing">
                       A highly accurate propensity score model is not necessarily
@@ -636,7 +635,7 @@ export default function PropensityScoreTutorial() {
                       binsA={bins.psBinsT}
                       binsB={bins.psBinsU}
                       ticks={psTicks}
-                      title="Propensity score overlap"
+                      title="P(joining seminar | GPA) overlap"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <StatCard

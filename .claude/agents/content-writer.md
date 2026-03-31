@@ -23,6 +23,7 @@ You write the **text content** for tutorial steps: explanations, InfoBoxes, Tex 
 ### Narrative Style
 - Lead with intuition, follow with formulas
 - Use concrete examples (the growth-mindset seminar, polling data, medical trials)
+- **Ground everything in the running example.** Chart titles, legend labels, InfoBox text, and StatCard labels should reference the story (e.g., "Seminar" / "No seminar" instead of "Treated" / "Untreated", "Prior GPA" instead of "X", "assessment score" instead of "Y"). The reader should never see a chart that feels abstract when there is a concrete scenario to anchor it.
 - Short paragraphs — 2-3 sentences max
 - Bold key terms on first introduction
 - Address the reader directly but sparingly

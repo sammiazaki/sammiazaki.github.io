@@ -35,6 +35,11 @@ const sx = (v) => PAD.left + ((v - xMin) / xRange) * PW;  // data → SVG x
 const sy = (v) => PAD.top + PH * (1 - v / yMax);          // data → SVG y
 ```
 
+### Labeling (ground in the running example)
+- Chart titles, axis labels, and legends must reference the tutorial's concrete scenario — never use abstract labels like "Treated"/"Untreated" or "X"/"Y" when there is a story to anchor them.
+- Example: "Prior GPA by group" not "Covariate (X) by group"; legend says "Seminar"/"No seminar" not "Treated"/"Untreated".
+- Pass story-specific `labelA`/`labelB`/`title` props to chart components rather than relying on generic defaults.
+
 ### Visual Style (match existing tutorials)
 - Axis lines: `stroke="#cbd5e1"` (slate-300)
 - Tick labels: `className="text-[10px] fill-slate-500"`
