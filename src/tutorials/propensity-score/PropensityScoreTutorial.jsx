@@ -344,11 +344,12 @@ export default function PropensityScoreTutorial() {
                       title="Prior achievement (X) by group"
                     />
                     <div className="grid grid-cols-3 gap-2">
-                      <StatCard label="Naive ATE" value={fmt(stats.naiveATE)} />
-                      <StatCard label="True ATE" value={fmt(TRUE_ATE)} />
+                      <StatCard label="Naive ATE" value={fmt(stats.naiveATE)} formula="E[Y|T{=}1] - E[Y|T{=}0]" />
+                      <StatCard label="True ATE" value={fmt(TRUE_ATE)} formula="E[Y_1 - Y_0]" />
                       <StatCard
                         label="Bias"
                         value={fmt(bias)}
+                        formula={"\\hat{\\tau}_{\\text{naive}} - \\tau"}
                         className={Math.abs(bias) > 0.05 ? "bg-amber-50" : "bg-emerald-50"}
                       />
                     </div>
@@ -496,18 +497,20 @@ export default function PropensityScoreTutorial() {
                       <StatCard
                         label="Naive ATE"
                         value={fmt(stats.naiveATE)}
+                        formula="E[Y|T{=}1] - E[Y|T{=}0]"
                         className="bg-amber-50"
                       />
                       <StatCard
                         label="IPTW ATE"
                         value={fmt(stats.iptwATE)}
+                        formula={"\\frac{1}{N}\\sum_i \\frac{(T_i - e(X_i))\\, Y_i}{e(X_i)(1 - e(X_i))}"}
                         className="bg-emerald-50"
                       />
-                      <StatCard label="True ATE" value={fmt(TRUE_ATE)} className="bg-slate-50" />
+                      <StatCard label="True ATE" value={fmt(TRUE_ATE)} formula="E[Y_1 - Y_0]" className="bg-slate-50" />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
-                      <StatCard label="Naive bias" value={fmt(stats.naiveATE - TRUE_ATE)} />
-                      <StatCard label="IPTW bias" value={fmt(stats.iptwATE - TRUE_ATE)} />
+                      <StatCard label="Naive bias" value={fmt(stats.naiveATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{naive}} - \\tau"} />
+                      <StatCard label="IPTW bias" value={fmt(stats.iptwATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{IPTW}} - \\tau"} />
                     </div>
                   </div>
                   <div className="space-y-3">
@@ -639,9 +642,10 @@ export default function PropensityScoreTutorial() {
                       <StatCard
                         label="Max weight"
                         value={fmt(stats.maxObsWeight, 1)}
+                        formula={"\\max_i\\; \\tfrac{T_i}{e(X_i)} + \\tfrac{1-T_i}{1-e(X_i)}"}
                         className={stats.maxObsWeight > 20 ? "bg-rose-50" : "bg-emerald-50"}
                       />
-                      <StatCard label="IPTW ATE" value={fmt(stats.iptwATE)} />
+                      <StatCard label="IPTW ATE" value={fmt(stats.iptwATE)} formula={"\\frac{1}{N}\\sum_i \\frac{(T_i - e(X_i))\\, Y_i}{e(X_i)(1 - e(X_i))}"} />
                     </div>
                     <LabeledSlider
                       label="Clip weights at"
@@ -653,8 +657,8 @@ export default function PropensityScoreTutorial() {
                       step={1}
                     />
                     <div className="grid grid-cols-2 gap-2">
-                      <StatCard label="Clipped IPTW" value={fmt(clippedStats.iptwATE)} />
-                      <StatCard label="Clipping bias" value={fmt(clippedStats.iptwATE - TRUE_ATE)} />
+                      <StatCard label="Clipped IPTW" value={fmt(clippedStats.iptwATE)} formula={"\\hat{\\tau}_{\\text{IPTW}},\\; |w_i| \\le c"} />
+                      <StatCard label="Clipping bias" value={fmt(clippedStats.iptwATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{clipped}} - \\tau"} />
                     </div>
                     <InfoBox variant="muted">
                       Clipping caps extreme weights, reducing variance but introducing

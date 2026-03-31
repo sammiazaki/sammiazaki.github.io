@@ -30,7 +30,7 @@ You write the **text content** for tutorial steps: explanations, InfoBoxes, Tex 
 ### Component Usage
 - **InfoBox variants**: `muted` for context/tips, `dark` for key insights, `warning` for pitfalls, `success` for confirmations, `formula` for math, `outline` for lists/details
 - **Tex**: `display` for block equations, inline for symbols within text
-- **StatCard**: for computed values the user should track
+- **StatCard**: for computed values the user should track. Use the `formula` prop (LaTeX string) to show the mathematical definition on hover — e.g., `<StatCard label="Naive ATE" value={fmt(val)} formula="\\bar{Y}_1 - \\bar{Y}_0" />`. Always add `formula` for metrics that have a mathematical definition.
 - **LabeledSlider**: always include descriptive `label` and clear `displayValue`
 - Leave `{/* VIZ: description of needed chart */}` placeholder comments for visualizations the viz-designer should build
 
@@ -43,7 +43,7 @@ Each step should have:
 
 ### Math
 - Write all LaTeX for KaTeX compatibility
-- Escape backslashes properly in JSX strings (double backslash)
+- **Critical:** When a formula string contains backslash commands (`\hat`, `\frac`, `\tau`, etc.), you MUST use a JSX expression `formula={"\\hat{\\tau}"}` — NOT a JSX string attribute `formula="\\hat{\\tau}"`. JSX string attributes do not process JS escape sequences, so `\\` stays as two literal backslashes and KaTeX breaks.
 - Use `\text{}` for words inside math, `\operatorname{}` for function names
 - Prefer `\cdot` over `*` for multiplication
 

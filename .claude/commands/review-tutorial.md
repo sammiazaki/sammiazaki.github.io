@@ -37,20 +37,26 @@ For each QuizCard:
 - [ ] `explanation` is present and non-empty
 - [ ] Options are distinct (no duplicates)
 
-### 5. KaTeX validation
+### 5. StatCard formula validation
+For each StatCard with a `formula` prop:
+- [ ] The LaTeX in `formula` is syntactically valid KaTeX
+- [ ] The formula accurately describes the metric shown by the StatCard's `label`
+- [ ] All StatCards displaying mathematical metrics have a `formula` prop
+
+### 6. KaTeX validation
 For each `<Tex>` usage:
 - [ ] The LaTeX string is syntactically valid (check for unmatched braces, unknown commands)
 - [ ] `display` prop is used for block equations, omitted for inline
 
-### 6. Component imports
+### 7. Component imports
 - [ ] All imported components from `@/components/tutorial` are actually used
 - [ ] No unused imports
 - [ ] No missing imports (components used but not imported)
 
-### 7. Build check
+### 8. Build check
 - Run `npx vite build --logLevel error` to verify the tutorial compiles without errors
 
-### 8. Content quality (advisory)
+### 9. Content quality (advisory)
 Flag but don't block:
 - Steps with no interactive elements (all text, no sliders/charts/quizzes)
 - Very long steps that might benefit from splitting

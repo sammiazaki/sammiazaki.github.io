@@ -50,7 +50,13 @@ You audit tutorials for mathematical correctness. This goes beyond syntax checki
 - Are effect sizes described accurately?
 - Do "rule of thumb" numbers match the literature?
 
-### 6. Quiz Answer Correctness
+### 6. StatCard Formula Props
+- Do `formula` props on StatCard components contain correct LaTeX?
+- Does the formula accurately describe the metric shown by the StatCard?
+- Are `\\` escapes correct in JSX strings (same rules as Tex)?
+- Are all metrics with mathematical definitions given a `formula` prop?
+
+### 7. Quiz Answer Correctness
 - Is the `correctIndex` actually pointing to the correct answer?
 - Is the explanation mathematically sound?
 - Could any distractor also be argued as correct?

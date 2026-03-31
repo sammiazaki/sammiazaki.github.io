@@ -21,7 +21,7 @@ Personal website for Sam Miazaki, deployed to GitHub Pages. React 18 + Vite SPA 
 
 **Tutorial system:** Each tutorial lives in `src/tutorials/<slug>/` as a single component file. Tutorials are registered in `src/tutorials/registry.js` with metadata (slug, title, description, date, tags, optional source) and a `lazy()` import. `TutorialPage.jsx` resolves the slug from the URL and renders the matching component inside a `<Suspense>` boundary.
 
-**TutorialShell pattern:** Tutorials use `TutorialShell` (from `src/components/tutorial/`) which provides step-based navigation with a progress sidebar. The shell takes a `lessons` array (step titles) and a render-prop `children(step)` that receives the current step index. Shared building blocks exported from `src/components/tutorial/index.js`: `StepContent`, `QuizCard`, `StatCard`, `InfoBox`, `LabeledSlider`, `Tex` (KaTeX wrapper).
+**TutorialShell pattern:** Tutorials use `TutorialShell` (from `src/components/tutorial/`) which provides step-based navigation with a progress sidebar. The shell takes a `lessons` array (step titles) and a render-prop `children(step)` that receives the current step index. Shared building blocks exported from `src/components/tutorial/index.js`: `StepContent`, `QuizCard`, `StatCard` (supports optional `formula` prop — a LaTeX string shown as a hover tooltip), `InfoBox`, `LabeledSlider`, `Tex` (KaTeX wrapper).
 
 **Adding a new tutorial:** Create `src/tutorials/<slug>/<Name>Tutorial.jsx` using the TutorialShell pattern, then add an entry to `registry.js`.
 
