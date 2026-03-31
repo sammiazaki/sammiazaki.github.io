@@ -215,6 +215,347 @@ function DualHistogram({
 }
 
 /* ================================================================== */
+/*  Propensity scatter + sigmoid chart                                 */
+/* ================================================================== */
+
+const SC_W = 460;
+const SC_H = 280;
+const SC_PAD = { top: 20, right: 20, bottom: 36, left: 44 };
+const SC_PW = SC_W - SC_PAD.left - SC_PAD.right;
+const SC_PH = SC_H - SC_PAD.top - SC_PAD.bottom;
+
+function PropensityScatter({ data, confounding, hovered, onHover }) {
+  const xMin = -3.5, xMax = 3.5, yMin = 0, yMax = 1;
+
+  const sx = (v) => SC_PAD.left + ((v - xMin) / (xMax - xMin)) * SC_PW;
+  const sy = (v) => SC_PAD.top + SC_PH * (1 - (v - yMin) / (yMax - yMin));
+
+  // sigmoid curve points
+  const curvePoints = [];
+  for (let px = 0; px <= SC_PW; px += 2) {
+    const xVal = xMin + (px / SC_PW) * (xMax - xMin);
+    const yVal = logistic(confounding * xVal);
+    curvePoints.push(`${SC_PAD.left + px},${sy(yVal)}`);
+  }
+  const curvePath = `M${curvePoints.join("L")}`;
+
+  // y-axis ticks
+  const yTicks = [0, 0.25, 0.5, 0.75, 1.0];
+  const xTicks = [-3, -1.5, 0, 1.5, 3];
+
+  return (
+    <div>
+      <div className="text-sm font-medium text-slate-600 mb-1">
+        Each dot is a student — GPA vs. probability of joining
+      </div>
+      <svg
+        viewBox={`0 0 ${SC_W} ${SC_H}`}
+        className="w-full"
+        onMouseLeave={() => onHover?.(null)}
+      >
+        {/* grid lines */}
+        {yTicks.map((v) => (
+          <line key={`yg${v}`} x1={SC_PAD.left} y1={sy(v)} x2={SC_PAD.left + SC_PW} y2={sy(v)} stroke="#f1f5f9" />
+        ))}
+
+        {/* axes */}
+        <line x1={SC_PAD.left} y1={SC_PAD.top} x2={SC_PAD.left} y2={SC_PAD.top + SC_PH} stroke="#cbd5e1" />
+        <line x1={SC_PAD.left} y1={SC_PAD.top + SC_PH} x2={SC_PAD.left + SC_PW} y2={SC_PAD.top + SC_PH} stroke="#cbd5e1" />
+
+        {/* y-axis ticks + labels */}
+        {yTicks.map((v) => (
+          <text key={`yt${v}`} x={SC_PAD.left - 6} y={sy(v) + 3} textAnchor="end" className="text-[10px] fill-slate-500">
+            {v.toFixed(2)}
+          </text>
+        ))}
+        {/* y-axis label */}
+        <text
+          x={14}
+          y={SC_PAD.top + SC_PH / 2}
+          textAnchor="middle"
+          transform={`rotate(-90, 14, ${SC_PAD.top + SC_PH / 2})`}
+          className="text-[10px] fill-slate-500"
+        >
+          P(seminar)
+        </text>
+
+        {/* x-axis ticks */}
+        {xTicks.map((v) => (
+          <text key={`xt${v}`} x={sx(v)} y={SC_H - 8} textAnchor="middle" className="text-[10px] fill-slate-500">
+            {v.toFixed(1)}
+          </text>
+        ))}
+        {/* x-axis label */}
+        <text x={SC_PAD.left + SC_PW / 2} y={SC_H - 0} textAnchor="middle" className="text-[10px] fill-slate-500">
+          Prior GPA (standardized)
+        </text>
+
+        {/* dots — no-seminar first (background) */}
+        {data.map((d, i) => d.t === 0 && (
+          <circle
+            key={i}
+            cx={sx(d.x)}
+            cy={sy(d.ps)}
+            r={hovered === i ? 5 : 2.5}
+            fill="#94a3b8"
+            opacity={hovered === i ? 1 : 0.4}
+            className="transition-all duration-100"
+            onMouseEnter={() => onHover?.(i)}
+          />
+        ))}
+        {/* dots — seminar (foreground) */}
+        {data.map((d, i) => d.t === 1 && (
+          <circle
+            key={i}
+            cx={sx(d.x)}
+            cy={sy(d.ps)}
+            r={hovered === i ? 5 : 2.5}
+            fill="#1e293b"
+            opacity={hovered === i ? 1 : 0.5}
+            className="transition-all duration-100"
+            onMouseEnter={() => onHover?.(i)}
+          />
+        ))}
+
+        {/* sigmoid curve */}
+        <path d={curvePath} fill="none" stroke="#6366f1" strokeWidth={2.5} strokeLinecap="round" opacity={0.85} />
+
+        {/* hovered dot tooltip */}
+        {hovered !== null && data[hovered] && (() => {
+          const d = data[hovered];
+          const tx = sx(d.x);
+          const ty = sy(d.ps);
+          const flipX = tx > SC_PAD.left + SC_PW * 0.7;
+          const flipY = ty < SC_PAD.top + 50;
+          const bx = flipX ? tx - 130 : tx + 10;
+          const by = flipY ? ty + 12 : ty - 48;
+          return (
+            <g>
+              <rect x={bx} y={by} width={120} height={38} rx={4} fill="#1e293b" opacity={0.92} />
+              <text x={bx + 8} y={by + 14} className="text-[9px] fill-slate-300">
+                GPA: {fmt(d.x, 2)} | {d.t ? "Seminar" : "No seminar"}
+              </text>
+              <text x={bx + 8} y={by + 28} className="text-[10px] fill-white font-medium">
+                P(seminar) = {fmt(d.ps, 3)}
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* legend */}
+        <circle cx={SC_PAD.left + SC_PW - 138} cy={SC_PAD.top + 4} r={3.5} fill="#1e293b" opacity={0.7} />
+        <text x={SC_PAD.left + SC_PW - 130} y={SC_PAD.top + 7} className="text-[9px] fill-slate-600">Seminar</text>
+        <circle cx={SC_PAD.left + SC_PW - 78} cy={SC_PAD.top + 4} r={3.5} fill="#94a3b8" opacity={0.7} />
+        <text x={SC_PAD.left + SC_PW - 70} y={SC_PAD.top + 7} className="text-[9px] fill-slate-600">No seminar</text>
+        {/* curve legend */}
+        <line x1={SC_PAD.left + SC_PW - 24} y1={SC_PAD.top + 4} x2={SC_PAD.left + SC_PW - 10} y2={SC_PAD.top + 4} stroke="#6366f1" strokeWidth={2} />
+        <text x={SC_PAD.left + SC_PW - 6} y={SC_PAD.top + 7} className="text-[9px] fill-slate-600">e(x)</text>
+      </svg>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  Outcome scatter — raw vs IPTW weighted                             */
+/* ================================================================== */
+
+const OC_W = 500;
+const OC_H = 300;
+const OC_PAD = { top: 20, right: 20, bottom: 40, left: 48 };
+const OC_PW = OC_W - OC_PAD.left - OC_PAD.right;
+const OC_PH = OC_H - OC_PAD.top - OC_PAD.bottom;
+
+function OutcomeScatter({ data, weighted, hovered, onHover }) {
+  const xMin = -3.5, xMax = 3.5;
+  // compute y range from data
+  const ys = data.map((d) => d.y);
+  const yDataMin = Math.min(...ys);
+  const yDataMax = Math.max(...ys);
+  const yPad = (yDataMax - yDataMin) * 0.08;
+  const yMin = Math.floor((yDataMin - yPad) * 2) / 2;
+  const yMax = Math.ceil((yDataMax + yPad) * 2) / 2;
+
+  const sx = (v) => OC_PAD.left + ((v - xMin) / (xMax - xMin)) * OC_PW;
+  const sy = (v) => OC_PAD.top + OC_PH * (1 - (v - yMin) / (yMax - yMin));
+
+  // compute weights for sizing
+  const maxWeight = Math.min(
+    Math.max(...data.map((d) => (d.t === 1 ? 1 / d.ps : 1 / (1 - d.ps)))),
+    20
+  );
+
+  function dotRadius(d) {
+    if (!weighted) return 2.5;
+    const w = d.t === 1 ? 1 / d.ps : 1 / (1 - d.ps);
+    return 2 + Math.min(w / maxWeight, 1) * 7;
+  }
+
+  // group means for horizontal lines
+  const treated = data.filter((d) => d.t === 1);
+  const untreated = data.filter((d) => d.t === 0);
+
+  let meanT, meanU;
+  if (weighted) {
+    const wSumT = treated.reduce((s, d) => s + 1 / d.ps, 0);
+    meanT = treated.reduce((s, d) => s + d.y / d.ps, 0) / wSumT;
+    const wSumU = untreated.reduce((s, d) => s + 1 / (1 - d.ps), 0);
+    meanU = untreated.reduce((s, d) => s + d.y / (1 - d.ps), 0) / wSumU;
+  } else {
+    meanT = treated.reduce((s, d) => s + d.y, 0) / treated.length;
+    meanU = untreated.reduce((s, d) => s + d.y, 0) / untreated.length;
+  }
+
+  const yTicks = [];
+  for (let v = Math.ceil(yMin); v <= Math.floor(yMax); v += 1) yTicks.push(v);
+  if (yTicks.length < 3) {
+    for (let v = Math.ceil(yMin * 2) / 2; v <= yMax; v += 0.5) yTicks.push(v);
+  }
+  const xTicks = [-3, -1.5, 0, 1.5, 3];
+
+  return (
+    <div>
+      <div className="text-sm font-medium text-slate-600 mb-1">
+        {weighted
+          ? "IPTW weighted — dot size = importance weight"
+          : "Raw data — who scores higher?"}
+      </div>
+      <svg
+        viewBox={`0 0 ${OC_W} ${OC_H}`}
+        className="w-full"
+        onMouseLeave={() => onHover?.(null)}
+      >
+        {/* grid */}
+        {yTicks.map((v) => (
+          <line key={`yg${v}`} x1={OC_PAD.left} y1={sy(v)} x2={OC_PAD.left + OC_PW} y2={sy(v)} stroke="#f1f5f9" />
+        ))}
+
+        {/* axes */}
+        <line x1={OC_PAD.left} y1={OC_PAD.top} x2={OC_PAD.left} y2={OC_PAD.top + OC_PH} stroke="#cbd5e1" />
+        <line x1={OC_PAD.left} y1={OC_PAD.top + OC_PH} x2={OC_PAD.left + OC_PW} y2={OC_PAD.top + OC_PH} stroke="#cbd5e1" />
+
+        {/* y labels */}
+        {yTicks.map((v) => (
+          <text key={`yt${v}`} x={OC_PAD.left - 6} y={sy(v) + 3} textAnchor="end" className="text-[10px] fill-slate-500">
+            {v.toFixed(1)}
+          </text>
+        ))}
+        <text
+          x={14}
+          y={OC_PAD.top + OC_PH / 2}
+          textAnchor="middle"
+          transform={`rotate(-90, 14, ${OC_PAD.top + OC_PH / 2})`}
+          className="text-[10px] fill-slate-500"
+        >
+          Assessment score
+        </text>
+
+        {/* x labels */}
+        {xTicks.map((v) => (
+          <text key={`xt${v}`} x={sx(v)} y={OC_H - 12} textAnchor="middle" className="text-[10px] fill-slate-500">
+            {v.toFixed(1)}
+          </text>
+        ))}
+        <text x={OC_PAD.left + OC_PW / 2} y={OC_H - 0} textAnchor="middle" className="text-[10px] fill-slate-500">
+          Prior GPA (standardized)
+        </text>
+
+        {/* no-seminar dots */}
+        {data.map((d, i) => d.t === 0 && (
+          <circle
+            key={i}
+            cx={sx(d.x)}
+            cy={sy(d.y)}
+            r={hovered === i ? dotRadius(d) + 2 : dotRadius(d)}
+            fill="#94a3b8"
+            opacity={hovered === i ? 0.9 : weighted ? 0.35 : 0.3}
+            className="transition-all duration-300"
+            onMouseEnter={() => onHover?.(i)}
+          />
+        ))}
+        {/* seminar dots */}
+        {data.map((d, i) => d.t === 1 && (
+          <circle
+            key={i}
+            cx={sx(d.x)}
+            cy={sy(d.y)}
+            r={hovered === i ? dotRadius(d) + 2 : dotRadius(d)}
+            fill="#1e293b"
+            opacity={hovered === i ? 1 : weighted ? 0.4 : 0.4}
+            className="transition-all duration-300"
+            onMouseEnter={() => onHover?.(i)}
+          />
+        ))}
+
+        {/* group mean lines */}
+        <line x1={OC_PAD.left} y1={sy(meanT)} x2={OC_PAD.left + OC_PW} y2={sy(meanT)} stroke="#1e293b" strokeWidth={1.5} strokeDasharray="6,3" opacity={0.7} />
+        <line x1={OC_PAD.left} y1={sy(meanU)} x2={OC_PAD.left + OC_PW} y2={sy(meanU)} stroke="#94a3b8" strokeWidth={1.5} strokeDasharray="6,3" opacity={0.7} />
+
+        {/* ATE bracket on right edge */}
+        {(() => {
+          const bx = OC_PAD.left + OC_PW + 4;
+          const y1 = sy(meanT);
+          const y2 = sy(meanU);
+          const mid = (y1 + y2) / 2;
+          return (
+            <g>
+              <line x1={bx} y1={y1} x2={bx} y2={y2} stroke="#6366f1" strokeWidth={1.5} />
+              <line x1={bx - 3} y1={y1} x2={bx + 3} y2={y1} stroke="#6366f1" strokeWidth={1.5} />
+              <line x1={bx - 3} y1={y2} x2={bx + 3} y2={y2} stroke="#6366f1" strokeWidth={1.5} />
+              <text x={bx + 6} y={mid + 3} className="text-[8px] fill-indigo-600 font-medium">
+                {weighted ? "IPTW" : "Naive"}
+              </text>
+              <text x={bx + 6} y={mid + 13} className="text-[8px] fill-indigo-600">
+                {fmt(meanT - meanU, 3)}
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* mean labels */}
+        <text x={OC_PAD.left + 4} y={sy(meanT) - 4} className="text-[9px] fill-slate-700 font-medium">
+          Seminar mean
+        </text>
+        <text x={OC_PAD.left + 4} y={sy(meanU) - 4} className="text-[9px] fill-slate-400 font-medium">
+          No-seminar mean
+        </text>
+
+        {/* hover tooltip */}
+        {hovered !== null && data[hovered] && (() => {
+          const d = data[hovered];
+          const tx = sx(d.x);
+          const ty = sy(d.y);
+          const flipX = tx > OC_PAD.left + OC_PW * 0.65;
+          const flipY = ty < OC_PAD.top + 55;
+          const bx = flipX ? tx - 145 : tx + 10;
+          const by = flipY ? ty + 12 : ty - 52;
+          const w = d.t === 1 ? 1 / d.ps : 1 / (1 - d.ps);
+          return (
+            <g>
+              <rect x={bx} y={by} width={135} height={42} rx={4} fill="#1e293b" opacity={0.92} />
+              <text x={bx + 8} y={by + 14} className="text-[9px] fill-slate-300">
+                GPA: {fmt(d.x, 2)} | Score: {fmt(d.y, 2)}
+              </text>
+              <text x={bx + 8} y={by + 26} className="text-[9px] fill-slate-300">
+                {d.t ? "Seminar" : "No seminar"} | e(x): {fmt(d.ps, 3)}
+              </text>
+              <text x={bx + 8} y={by + 37} className="text-[10px] fill-white font-medium">
+                IPTW weight: {fmt(w, 2)}
+              </text>
+            </g>
+          );
+        })()}
+
+        {/* legend */}
+        <circle cx={OC_PAD.left + OC_PW - 130} cy={OC_PAD.top + 4} r={3.5} fill="#1e293b" opacity={0.7} />
+        <text x={OC_PAD.left + OC_PW - 122} y={OC_PAD.top + 7} className="text-[9px] fill-slate-600">Seminar</text>
+        <circle cx={OC_PAD.left + OC_PW - 62} cy={OC_PAD.top + 4} r={3.5} fill="#94a3b8" opacity={0.7} />
+        <text x={OC_PAD.left + OC_PW - 54} y={OC_PAD.top + 7} className="text-[9px] fill-slate-600">No seminar</text>
+      </svg>
+    </div>
+  );
+}
+
+/* ================================================================== */
 /*  Tutorial                                                           */
 /* ================================================================== */
 
@@ -230,6 +571,9 @@ const LESSONS = [
 export default function PropensityScoreTutorial() {
   const [confounding, setConfounding] = useState([1.0]);
   const [clipWeight, setClipWeight] = useState([50]);
+  const [hoveredDot, setHoveredDot] = useState(null);
+  const [hoveredOutcome, setHoveredOutcome] = useState(null);
+  const [showWeighted, setShowWeighted] = useState(false);
 
   const data = useMemo(() => generateData(confounding[0]), [confounding[0]]);
 
@@ -366,35 +710,53 @@ export default function PropensityScoreTutorial() {
 
           {/* ─── Step 1: The propensity score ──────────────────── */}
           {step === 1 && (
-            <StepContent className="grid gap-4 md:grid-cols-2">
+            <StepContent className="space-y-4">
               <Card className="rounded-xl shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-2xl">
                     <Sigma className="h-6 w-6" /> The propensity score
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-slate-700">
-                  <InfoBox variant="formula">
-                    <Tex display>{"e(x) = P(T = 1 \\mid X = x)"}</Tex>
-                  </InfoBox>
-                  <p>
-                    The propensity score is the probability that a student joins
-                    the seminar, given their prior GPA. The crucial insight:
-                  </p>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-5 md:grid-cols-[1fr_1.4fr]">
+                    <div className="space-y-3 text-slate-700">
+                      <InfoBox variant="formula">
+                        <Tex display>{"e(x) = P(\\text{seminar} \\mid \\text{GPA} = x)"}</Tex>
+                      </InfoBox>
+                      <p>
+                        The propensity score is the probability that a student joins
+                        the seminar, given their prior GPA. The{" "}
+                        <strong>indigo curve</strong> is the logistic function that
+                        maps GPA to enrollment probability. Each dot is one of {N} students.
+                      </p>
+                      {confoundingSlider}
+                      <InfoBox variant="muted">
+                        At 0 the curve is flat — enrollment is random. Increase it
+                        to steepen the sigmoid and watch the color clouds separate:
+                        the school's best students become almost guaranteed to join.
+                      </InfoBox>
+                    </div>
+                    <PropensityScatter
+                      data={data}
+                      confounding={confounding[0]}
+                      hovered={hoveredDot}
+                      onHover={setHoveredDot}
+                    />
+                  </div>
                   <InfoBox variant="dark">
                     Take two students with the same propensity score — one enrolled
                     in the seminar, one didn't. The only reason one enrolled is{" "}
                     <strong>chance</strong>. Conditioning on the propensity score makes
                     observational data look as good as randomized.
                   </InfoBox>
-                  <p>
+                  <p className="text-slate-700">
                     This is the <strong>balancing property</strong>:
                   </p>
                   <InfoBox variant="formula">
                     <Tex display>{"(Y_1, Y_0) \\perp\\!\\!\\!\\perp T \\mid e(X)"}</Tex>
                   </InfoBox>
-                  <p>
-                    Potential outcomes are independent of treatment, conditional on
+                  <p className="text-slate-700">
+                    Potential outcomes are independent of enrollment, conditional on
                     the propensity score. You don't need to control for every
                     confounder separately — this single number is sufficient.
                   </p>
@@ -403,29 +765,31 @@ export default function PropensityScoreTutorial() {
 
               <Card className="rounded-xl shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Why it works</CardTitle>
+                  <CardTitle className="text-lg">Why it works</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-slate-700">
+                <CardContent className="space-y-3 text-slate-700">
                   <p>
                     The balancing property follows directly from the definition of{" "}
                     <Tex>{"e(x)"}</Tex>. We show that{" "}
                     <Tex>{"T \\perp\\!\\!\\!\\perp X \\mid e(X)"}</Tex> by proving
                     both sides of a conditional expectation are equal:
                   </p>
-                  <InfoBox variant="formula" title="Left-hand side">
-                    <Tex display>
-                      {"E[T \\mid e(x),\\, X] = E[T \\mid X] = e(x)"}
-                    </Tex>
-                    <div className="mt-1 text-xs text-slate-500">
-                      Since e(x) is a function of X, conditioning on both is the same
-                      as conditioning on X alone.
-                    </div>
-                  </InfoBox>
-                  <InfoBox variant="formula" title="Right-hand side (iterated expectations)">
-                    <Tex display>
-                      {"E[T \\mid e(x)] = E\\big[\\,E[T \\mid e(x),X]\\;\\big|\\;e(x)\\,\\big] = E[\\,e(x) \\mid e(x)\\,] = e(x)"}
-                    </Tex>
-                  </InfoBox>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <InfoBox variant="formula" title="Left-hand side">
+                      <Tex display>
+                        {"E[T \\mid e(x),\\, X] = E[T \\mid X] = e(x)"}
+                      </Tex>
+                      <div className="mt-1 text-xs text-slate-500">
+                        Since e(x) is a function of X, conditioning on both is the same
+                        as conditioning on X alone.
+                      </div>
+                    </InfoBox>
+                    <InfoBox variant="formula" title="Right-hand side (iterated expectations)">
+                      <Tex display>
+                        {"E[T \\mid e(x)] = E\\big[\\,E[T \\mid e(x),X]\\;\\big|\\;e(x)\\,\\big] = E[\\,e(x) \\mid e(x)\\,] = e(x)"}
+                      </Tex>
+                    </InfoBox>
+                  </div>
                   <p>
                     Both sides equal <Tex>{"e(x)"}</Tex>. Treatment assignment is
                     independent of covariates given the propensity score.{" "}
@@ -455,6 +819,7 @@ export default function PropensityScoreTutorial() {
                     Instead of comparing seminar and non-seminar students directly,
                     we <strong>reweight</strong> each student to construct a
                     pseudo-population where enrollment is independent of prior GPA.
+                    Toggle the view below to see what reweighting does to each student.
                   </p>
                   <InfoBox variant="formula" title="IPTW estimator">
                     <Tex display>
@@ -483,49 +848,93 @@ export default function PropensityScoreTutorial() {
 
               <Card className="rounded-xl shadow-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Interactive estimation</CardTitle>
+                  <CardTitle className="text-2xl">See the reweighting in action</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-                  <div className="space-y-5">
-                    {confoundingSlider}
-                    <InfoBox variant="muted">
-                      Increase confounding and watch the naive estimate drift while
-                      IPTW stays close to the truth.
-                    </InfoBox>
-                    <div className="grid grid-cols-3 gap-2">
-                      <StatCard
-                        label="Naive ATE"
-                        value={fmt(stats.naiveATE)}
-                        formula="E[Y|T{=}1] - E[Y|T{=}0]"
-                        className="bg-amber-50"
-                      />
-                      <StatCard
-                        label="IPTW ATE"
-                        value={fmt(stats.iptwATE)}
-                        formula={"\\frac{1}{N}\\sum_i \\frac{(T_i - e(X_i))\\, Y_i}{e(X_i)(1 - e(X_i))}"}
-                        className="bg-emerald-50"
-                      />
-                      <StatCard label="True ATE" value={fmt(TRUE_ATE)} formula="E[Y_1 - Y_0]" className="bg-slate-50" />
+                <CardContent className="space-y-4">
+                  <div className="grid gap-5 md:grid-cols-[1fr_1.6fr]">
+                    {/* ── Controls sidebar ── */}
+                    <div className="space-y-3">
+                      {confoundingSlider}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowWeighted(false)}
+                          className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${!showWeighted ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                        >
+                          Raw data
+                        </button>
+                        <button
+                          onClick={() => setShowWeighted(true)}
+                          className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${showWeighted ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                        >
+                          IPTW weighted
+                        </button>
+                      </div>
+                      <InfoBox variant="muted">
+                        Increase confounding and watch the naive estimate drift while
+                        IPTW stays close to the truth.
+                      </InfoBox>
+                      <div className="grid grid-cols-3 gap-2">
+                        <StatCard
+                          label="Naive ATE"
+                          value={fmt(stats.naiveATE)}
+                          formula="E[Y|T{=}1] - E[Y|T{=}0]"
+                          className="bg-amber-50"
+                        />
+                        <StatCard
+                          label="IPTW ATE"
+                          value={fmt(stats.iptwATE)}
+                          formula={"\\frac{1}{N}\\sum_i \\frac{(T_i - e(X_i))\\, Y_i}{e(X_i)(1 - e(X_i))}"}
+                          className="bg-emerald-50"
+                        />
+                        <StatCard label="True ATE" value={fmt(TRUE_ATE)} formula="E[Y_1 - Y_0]" className="bg-slate-50" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <StatCard label="Naive bias" value={fmt(stats.naiveATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{naive}} - \\tau"} />
+                        <StatCard label="IPTW bias" value={fmt(stats.iptwATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{IPTW}} - \\tau"} />
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <StatCard label="Naive bias" value={fmt(stats.naiveATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{naive}} - \\tau"} />
-                      <StatCard label="IPTW bias" value={fmt(stats.iptwATE - TRUE_ATE)} formula={"\\hat{\\tau}_{\\text{IPTW}} - \\tau"} />
+
+                    {/* ── Chart ── */}
+                    <div className="space-y-3">
+                      <OutcomeScatter
+                        data={data}
+                        weighted={showWeighted}
+                        hovered={hoveredOutcome}
+                        onHover={setHoveredOutcome}
+                      />
+                      <DualHistogram
+                        binsA={bins.psBinsT}
+                        binsB={bins.psBinsU}
+                        ticks={psTicks}
+                        title="P(joining seminar | GPA)"
+                      />
+                      <InfoBox variant={stats.maxObsWeight > 20 ? "warning" : "muted"}>
+                        Max weight: {fmt(stats.maxObsWeight, 1)}.
+                        {stats.maxObsWeight > 20
+                          ? " Extreme weights — estimates may be unstable."
+                          : " Weights look reasonable."}
+                      </InfoBox>
                     </div>
                   </div>
-                  <div className="space-y-3">
-                    <DualHistogram
-                      binsA={bins.psBinsT}
-                      binsB={bins.psBinsU}
-                      ticks={psTicks}
-                      title="P(joining seminar | GPA)"
-                    />
-                    <InfoBox variant={stats.maxObsWeight > 20 ? "warning" : "muted"}>
-                      Max weight: {fmt(stats.maxObsWeight, 1)}.
-                      {stats.maxObsWeight > 20
-                        ? " Extreme weights — estimates may be unstable."
-                        : " Weights look reasonable."}
-                    </InfoBox>
-                  </div>
+
+                  <InfoBox variant="dark">
+                    {showWeighted ? (
+                      <>
+                        The large dots are students who "shouldn't" be in their group — a
+                        high-GPA student who <em>skipped</em> the seminar, or a low-GPA
+                        student who <em>joined</em>. They carry the most causal information.
+                        Notice how the gap between the dashed mean lines shrinks toward the
+                        true effect of <strong>{fmt(TRUE_ATE)}</strong>.
+                      </>
+                    ) : (
+                      <>
+                        The dashed lines show each group's average score. The gap between
+                        them ({fmt(stats.naiveATE)}) overstates the seminar's effect because
+                        seminar students already had higher GPAs. Try increasing confounding
+                        to see this gap widen — then toggle to IPTW to correct it.
+                      </>
+                    )}
+                  </InfoBox>
                 </CardContent>
               </Card>
             </StepContent>
