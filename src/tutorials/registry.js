@@ -49,6 +49,20 @@ const tutorials = [
     },
     component: lazy(() => import("./propensity-score/PropensityScoreTutorial.jsx")),
   },
+  {
+    slug: "doubly-robust",
+    title: "Doubly Robust Estimation",
+    description:
+      "Learn how combining propensity scores and outcome regression creates an estimator that only needs one model to be correct.",
+    date: "2026-03-31",
+    tags: ["causal inference", "propensity score", "regression", "doubly robust"],
+    source: {
+      title: "Doubly Robust Estimation — Causal Inference for the Brave and True",
+      author: "Matheus Facure",
+      url: "https://matheusfacure.github.io/python-causality-handbook/12-Doubly-Robust-Estimation.html",
+    },
+    component: lazy(() => import("./doubly-robust/DoublyRobustTutorial.jsx")),
+  },
 ];
 
 export default tutorials;

@@ -1,0 +1,1 @@
+- [Tutorial system patterns](project_tutorial_patterns.md) — TutorialShell props, registry format, folder structure, import conventions for Noodlelab
