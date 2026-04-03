@@ -34,7 +34,7 @@ You write the **text content** for tutorial steps: explanations, InfoBoxes, Tex 
 - **StatCard**: for computed values the user should track. Use the `formula` prop (LaTeX string) to show the mathematical definition on hover — e.g., `<StatCard label="Naive ATE" value={fmt(val)} formula="\\bar{Y}_1 - \\bar{Y}_0" />`. Always add `formula` for metrics that have a mathematical definition.
 - **LabeledSlider**: always include descriptive `label` and clear `displayValue`
 - Leave `{/* VIZ: description of needed chart */}` placeholder comments for visualizations the viz-designer should build
-- **Chart containers:** Wrap any chart/SVG component in `<div className="max-w-md">` — charts must NOT span full content width. Chart titles use `text-[10px] text-slate-400`.
+- **Side-by-side layout for interactive steps:** Use `grid gap-6 md:grid-cols-[0.9fr_1.1fr]` on CardContent. Left column: text, sliders, StatCards, InfoBoxes. Right column: charts. Charts must NOT take a full-width row on their own. Chart titles use `text-[10px] text-slate-400`.
 
 ### Step Structure
 Each step should have:

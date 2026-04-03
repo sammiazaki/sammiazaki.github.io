@@ -320,7 +320,7 @@ function StabilityChart({ grid, currentQ, currentDR, xLabel, compLabel, title })
   const dotY = sy(currentDR);
 
   return (
-    <div className="max-w-md">
+    <div>
       {title && <div className="text-[10px] text-slate-400 mb-1">{title}</div>}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {/* y-axis */}
@@ -449,7 +449,7 @@ function BootstrapHistogramPanel({ both, wrongPS, wrongOM }) {
   ];
 
   return (
-    <div className="max-w-md">
+    <div>
     <svg viewBox={`0 0 ${W} ${TOTAL_H}`} className="w-full">
       {/* x-axis label at bottom */}
       <text
@@ -640,7 +640,7 @@ function BiasGauge({ currentDR, psQuality, omQuality, heatmapCells }) {
   const heatmapAxisTicks = [0, 0.25, 0.5, 0.75, 1];
 
   return (
-    <div className="max-w-md">
+    <div>
     <svg viewBox={`0 0 ${W} ${TOTAL_SVG_H}`} className="w-full">
       {/* ---- Gauge ---- */}
       {/* Background segments */}
@@ -1038,80 +1038,71 @@ export default function DoublyRobustTutorial() {
                     <ShieldCheck className="h-6 w-6" /> When the Outcome Model Saves You
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-slate-700">
-                  <p>
-                    Suppose your regression model for sales is well-specified — it
-                    correctly captures how experience and prior performance predict
-                    sales under each training scenario. What happens then, even if
-                    your propensity score model is completely wrong?
-                  </p>
-                  <p>
-                    The algebraic argument is clean. When <Tex>{String.raw`\hat{\mu}_1`}</Tex>{" "}
-                    is the true conditional expectation, the residuals{" "}
-                    <Tex>{String.raw`Y_i - \hat{\mu}_1(X_i)`}</Tex> average to zero
-                    among trained employees. That means the entire propensity-score
-                    correction term gets multiplied by something that averages to zero
-                    — so it does not matter what value <Tex>{String.raw`\hat{P}(X_i)`}</Tex>{" "}
-                    takes. The formula collapses to the pure regression estimator.
-                  </p>
-
-                  <InfoBox variant="formula">
-                    <Tex display>{String.raw`\text{If } \hat{\mu}_1 \text{ correct:}\quad \mathbb{E}\!\left[\frac{T_i(Y_i - \hat{\mu}_1(X_i))}{\hat{P}(X_i)}\right] = 0`}</Tex>
-                  </InfoBox>
-
-                  <p>
-                    Use the slider below to degrade the propensity score model — watch
-                    what happens to the DR estimate when the outcome model is held correct.
-                  </p>
-
-                  <div className="rounded-xl border p-4 bg-slate-50">
-                    <LabeledSlider
-                      label="Propensity score model quality"
-                      value={psQuality2}
-                      displayValue={psQuality2[0] < 0.15 ? "Random (flat 0.5)" : psQuality2[0] > 0.85 ? "Correctly specified" : `${Math.round(psQuality2[0] * 100)}% of true signal`}
-                      onValueChange={setPsQuality2}
-                      min={0}
-                      max={1}
-                      step={0.05}
-                    />
-                    <p className="mt-2 text-xs text-slate-500">
-                      At 0, everyone is assigned PS = 0.5 (completely ignoring
-                      covariates). At 1, the true propensity score is used.
+                <CardContent className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
+                  <div className="space-y-4 text-slate-700">
+                    <p>
+                      Suppose your regression model for sales is well-specified — it
+                      correctly captures how experience and prior performance predict
+                      sales under each training scenario. What happens then, even if
+                      your propensity score model is completely wrong?
                     </p>
+                    <p>
+                      When <Tex>{String.raw`\hat{\mu}_1`}</Tex>{" "}
+                      is the true conditional expectation, the residuals{" "}
+                      <Tex>{String.raw`Y_i - \hat{\mu}_1(X_i)`}</Tex> average to zero
+                      among trained employees — so the propensity-score
+                      correction term vanishes regardless of <Tex>{String.raw`\hat{P}(X_i)`}</Tex>.
+                    </p>
+                    <InfoBox variant="formula">
+                      <Tex display>{String.raw`\text{If } \hat{\mu}_1 \text{ correct:}\quad \mathbb{E}\!\left[\frac{T_i(Y_i - \hat{\mu}_1(X_i))}{\hat{P}(X_i)}\right] = 0`}</Tex>
+                    </InfoBox>
+                    <div className="rounded-xl border p-4 bg-slate-50">
+                      <LabeledSlider
+                        label="Propensity score model quality"
+                        value={psQuality2}
+                        displayValue={psQuality2[0] < 0.15 ? "Random (flat 0.5)" : psQuality2[0] > 0.85 ? "Correctly specified" : `${Math.round(psQuality2[0] * 100)}% of true signal`}
+                        onValueChange={setPsQuality2}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                      />
+                      <p className="mt-2 text-xs text-slate-500">
+                        At 0, everyone is assigned PS = 0.5. At 1, the true propensity score is used.
+                      </p>
+                    </div>
+                    <InfoBox variant="dark">
+                      With the outcome model correctly specified, the DR estimate stays
+                      near $3.20K regardless of how badly you mangle the propensity
+                      score model. The outcome model acts as a safety net.
+                    </InfoBox>
                   </div>
-
-                  <StabilityChart
-                    grid={STABILITY_GRID_PS}
-                    currentQ={psQuality2[0]}
-                    currentDR={step2.dr_degraded}
-                    xLabel="Propensity score model quality (0 = flat 0.5, 1 = true PS)"
-                    compLabel="IPW-only estimate"
-                    title="Training sales boost ($K) as PS model degrades — outcome model held correct"
-                  />
-
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <StatCard
-                      label="Naive difference in means"
-                      value={`$${fmt(step2.naive)}K`}
-                      formula={"\\bar{Y}_{\\text{trained}} - \\bar{Y}_{\\text{untrained}}"}
+                  <div className="space-y-3">
+                    <StabilityChart
+                      grid={STABILITY_GRID_PS}
+                      currentQ={psQuality2[0]}
+                      currentDR={step2.dr_degraded}
+                      xLabel="PS quality (0 = flat, 1 = true)"
+                      compLabel="IPW-only"
+                      title="Sales boost ($K) as PS degrades"
                     />
-                    <StatCard
-                      label="DR estimate — correct PS"
-                      value={`$${fmt(step2.dr_correct)}K`}
-                      formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{P}=P^*"}
-                    />
-                    <StatCard
-                      label="DR estimate — degraded PS"
-                      value={`$${fmt(step2.dr_degraded)}K`}
-                      formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{P}\\text{ wrong}"}
-                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      <StatCard
+                        label="Naive"
+                        value={`$${fmt(step2.naive)}K`}
+                        formula={"\\bar{Y}_{\\text{trained}} - \\bar{Y}_{\\text{untrained}}"}
+                      />
+                      <StatCard
+                        label="DR (correct PS)"
+                        value={`$${fmt(step2.dr_correct)}K`}
+                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{P}=P^*"}
+                      />
+                      <StatCard
+                        label="DR (degraded PS)"
+                        value={`$${fmt(step2.dr_degraded)}K`}
+                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{P}\\text{ wrong}"}
+                      />
+                    </div>
                   </div>
-
-                  <InfoBox variant="dark">
-                    With the outcome model correctly specified, the DR estimate stays
-                    near $3.20K regardless of how badly you mangle the propensity
-                    score model. The outcome model acts as a safety net.
-                  </InfoBox>
                 </CardContent>
               </Card>
             </StepContent>
@@ -1126,79 +1117,69 @@ export default function DoublyRobustTutorial() {
                     <ShieldCheck className="h-6 w-6" /> When the Propensity Score Saves You
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-slate-700">
-                  <p>
-                    Now flip the scenario. Your regression model for sales is wrong —
-                    maybe it uses a linear form when the true relationship is nonlinear,
-                    or it omits an important interaction. But your propensity score model
-                    correctly captures who self-selects into training.
-                  </p>
-                  <p>
-                    The algebraic argument mirrors Step 2. The DR formula can be
-                    rearranged to reveal that, when <Tex>{String.raw`\hat{P}(X_i)`}</Tex>{" "}
-                    is the true propensity score, the expected value of{" "}
-                    <Tex>{String.raw`T_i - \hat{P}(X_i)`}</Tex> conditional on <Tex>X</Tex> is
-                    exactly zero. That zeros out the term that multiplies the outcome model's
-                    prediction error — leaving a pure IPW estimator.
-                  </p>
-
-                  <InfoBox variant="formula">
-                    <Tex display>{String.raw`\text{If } \hat{P} \text{ correct:}\quad \mathbb{E}\!\left[\frac{T_i - \hat{P}(X_i)}{\hat{P}(X_i)}\,\hat{\mu}_1(X_i)\;\Big|\;X_i\right] = 0`}</Tex>
-                  </InfoBox>
-
-                  <p>
-                    Use the slider to degrade the outcome model — watch the DR estimate
-                    hold steady while the outcome-model-only estimate drifts.
-                  </p>
-
-                  <div className="rounded-xl border p-4 bg-slate-50">
-                    <LabeledSlider
-                      label="Outcome model quality"
-                      value={omQuality3}
-                      displayValue={omQuality3[0] < 0.15 ? "Intercept only (no covariates)" : omQuality3[0] > 0.85 ? "Correctly specified" : `${Math.round(omQuality3[0] * 100)}% of true signal`}
-                      onValueChange={setOmQuality3}
-                      min={0}
-                      max={1}
-                      step={0.05}
-                    />
-                    <p className="mt-2 text-xs text-slate-500">
-                      At 0, the outcome model uses no covariates (intercept only). At 1,
-                      it uses the full correct specification.
+                <CardContent className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
+                  <div className="space-y-4 text-slate-700">
+                    <p>
+                      Now flip the scenario. Your regression model for sales is wrong —
+                      maybe it omits an important interaction. But your propensity score model
+                      correctly captures who self-selects into training.
                     </p>
+                    <p>
+                      When <Tex>{String.raw`\hat{P}(X_i)`}</Tex>{" "}
+                      is correct, <Tex>{String.raw`E[T_i - \hat{P}(X_i) \mid X_i] = 0`}</Tex>,
+                      which zeros out the outcome model's prediction error — leaving
+                      a pure IPW estimator.
+                    </p>
+                    <InfoBox variant="formula">
+                      <Tex display>{String.raw`\text{If } \hat{P} \text{ correct:}\quad \mathbb{E}\!\left[\frac{T_i - \hat{P}(X_i)}{\hat{P}(X_i)}\,\hat{\mu}_1(X_i)\;\Big|\;X_i\right] = 0`}</Tex>
+                    </InfoBox>
+                    <div className="rounded-xl border p-4 bg-slate-50">
+                      <LabeledSlider
+                        label="Outcome model quality"
+                        value={omQuality3}
+                        displayValue={omQuality3[0] < 0.15 ? "Intercept only (no covariates)" : omQuality3[0] > 0.85 ? "Correctly specified" : `${Math.round(omQuality3[0] * 100)}% of true signal`}
+                        onValueChange={setOmQuality3}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                      />
+                      <p className="mt-2 text-xs text-slate-500">
+                        At 0, the outcome model uses no covariates. At 1, the full correct specification.
+                      </p>
+                    </div>
+                    <InfoBox variant="dark">
+                      With the propensity score correctly specified, the DR estimate stays
+                      near $3.20K even when the outcome model is completely misspecified.
+                      The propensity score acts as a safety net.
+                    </InfoBox>
                   </div>
-
-                  <StabilityChart
-                    grid={STABILITY_GRID_OM}
-                    currentQ={omQuality3[0]}
-                    currentDR={step3.dr_degraded}
-                    xLabel="Outcome model quality (0 = intercept only, 1 = full specification)"
-                    compLabel="OM-only estimate"
-                    title="Training sales boost ($K) as outcome model degrades — PS held correct"
-                  />
-
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <StatCard
-                      label="Naive difference in means"
-                      value={`$${fmt(step3.naive)}K`}
-                      formula={"\\bar{Y}_{\\text{trained}} - \\bar{Y}_{\\text{untrained}}"}
+                  <div className="space-y-3">
+                    <StabilityChart
+                      grid={STABILITY_GRID_OM}
+                      currentQ={omQuality3[0]}
+                      currentDR={step3.dr_degraded}
+                      xLabel="OM quality (0 = intercept, 1 = full)"
+                      compLabel="OM-only"
+                      title="Sales boost ($K) as outcome model degrades"
                     />
-                    <StatCard
-                      label="DR estimate — correct outcome model"
-                      value={`$${fmt(step3.dr_correct)}K`}
-                      formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{\\mu}=\\mu^*"}
-                    />
-                    <StatCard
-                      label="DR estimate — degraded outcome model"
-                      value={`$${fmt(step3.dr_degraded)}K`}
-                      formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{\\mu}\\text{ wrong}"}
-                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      <StatCard
+                        label="Naive"
+                        value={`$${fmt(step3.naive)}K`}
+                        formula={"\\bar{Y}_{\\text{trained}} - \\bar{Y}_{\\text{untrained}}"}
+                      />
+                      <StatCard
+                        label="DR (correct OM)"
+                        value={`$${fmt(step3.dr_correct)}K`}
+                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{\\mu}=\\mu^*"}
+                      />
+                      <StatCard
+                        label="DR (degraded OM)"
+                        value={`$${fmt(step3.dr_degraded)}K`}
+                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}},\\; \\hat{\\mu}\\text{ wrong}"}
+                      />
+                    </div>
                   </div>
-
-                  <InfoBox variant="dark">
-                    With the propensity score correctly specified, the DR estimate stays
-                    near $3.20K even when the outcome model is completely misspecified.
-                    The propensity score acts as a safety net.
-                  </InfoBox>
                 </CardContent>
               </Card>
             </StepContent>
@@ -1213,105 +1194,58 @@ export default function DoublyRobustTutorial() {
                     <BarChart3 className="h-6 w-6" /> Bootstrap & Confidence Intervals
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-slate-700">
-                  <p>
-                    Knowing the DR point estimate is close to the truth is only half
-                    the story. How certain are we? The DR estimator does not have a
-                    simple closed-form standard error — it inherits randomness from
-                    two estimated models, not one. The standard workaround is the
-                    <span className="font-semibold"> nonparametric bootstrap</span>.
-                  </p>
-                  <p>
-                    The procedure is straightforward: draw <Tex>B</Tex> resamples
-                    (with replacement) from the 500 employees, re-estimate both models
-                    and the DR ATE on each resample, and collect the distribution of
-                    bootstrap estimates. The 2.5th and 97.5th percentiles of that
-                    distribution form the 95% confidence interval.
-                  </p>
-
-                  <div className="rounded-xl border p-4 bg-slate-50">
-                    <LabeledSlider
-                      label="Bootstrap resamples (B)"
-                      value={bootstrapB}
-                      displayValue={`${bootstrapB[0]} resamples`}
-                      onValueChange={setBootstrapB}
-                      min={50}
-                      max={1000}
-                      step={50}
-                    />
-                    <p className="mt-2 text-xs text-slate-500">
-                      More resamples give a smoother distribution and more stable CI bounds,
-                      but take longer to compute. 200–500 is usually sufficient.
+                <CardContent className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
+                  <div className="space-y-4 text-slate-700">
+                    <p>
+                      How certain are we? The DR estimator inherits randomness from
+                      two estimated models. The standard workaround is the{" "}
+                      <span className="font-semibold">nonparametric bootstrap</span>:
+                      draw <Tex>B</Tex> resamples, re-estimate both models and the DR ATE
+                      on each, then take the 2.5th and 97.5th percentiles as the 95% CI.
                     </p>
+                    <div className="rounded-xl border p-4 bg-slate-50">
+                      <LabeledSlider
+                        label="Bootstrap resamples (B)"
+                        value={bootstrapB}
+                        displayValue={`${bootstrapB[0]} resamples`}
+                        onValueChange={setBootstrapB}
+                        min={50}
+                        max={1000}
+                        step={50}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-semibold text-emerald-600">Both correct</p>
+                        <StatCard label="ATE" value={`$${fmt(step4.both.mean)}K`} />
+                        <StatCard label="95% CI" value={`[${fmt(step4.both.lower)}, ${fmt(step4.both.upper)}]`} />
+                        <StatCard label="Width" value={`$${fmt(step4.both.upper - step4.both.lower)}K`} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-semibold text-amber-600">Wrong PS</p>
+                        <StatCard label="ATE" value={`$${fmt(step4.wrongPS.mean)}K`} />
+                        <StatCard label="95% CI" value={`[${fmt(step4.wrongPS.lower)}, ${fmt(step4.wrongPS.upper)}]`} />
+                        <StatCard label="Width" value={`$${fmt(step4.wrongPS.upper - step4.wrongPS.lower)}K`} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-semibold text-slate-500">Wrong OM</p>
+                        <StatCard label="ATE" value={`$${fmt(step4.wrongOM.mean)}K`} />
+                        <StatCard label="95% CI" value={`[${fmt(step4.wrongOM.lower)}, ${fmt(step4.wrongOM.upper)}]`} />
+                        <StatCard label="Width" value={`$${fmt(step4.wrongOM.upper - step4.wrongOM.lower)}K`} />
+                      </div>
+                    </div>
+                    <InfoBox title="Misspecification cost" variant="muted">
+                      When one model is wrong the point estimate stays correct — but the
+                      CI gets wider. You pay for it in precision even when bias protection holds.
+                    </InfoBox>
                   </div>
-
-                  <BootstrapHistogramPanel
-                    both={step4.both}
-                    wrongPS={step4.wrongPS}
-                    wrongOM={step4.wrongOM}
-                  />
-
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-slate-700">Both models correct</p>
-                      <StatCard
-                        label="Point estimate"
-                        value={`$${fmt(step4.both.mean)}K`}
-                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}}"}
-                      />
-                      <StatCard
-                        label="95% CI"
-                        value={`[$${fmt(step4.both.lower)}K, $${fmt(step4.both.upper)}K]`}
-                        formula={"[q_{0.025},\\; q_{0.975}]"}
-                      />
-                      <StatCard
-                        label="CI width"
-                        value={`$${fmt(step4.both.upper - step4.both.lower)}K`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-slate-700">Wrong PS, correct outcome model</p>
-                      <StatCard
-                        label="Point estimate"
-                        value={`$${fmt(step4.wrongPS.mean)}K`}
-                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}}"}
-                      />
-                      <StatCard
-                        label="95% CI"
-                        value={`[$${fmt(step4.wrongPS.lower)}K, $${fmt(step4.wrongPS.upper)}K]`}
-                        formula={"[q_{0.025},\\; q_{0.975}]"}
-                      />
-                      <StatCard
-                        label="CI width"
-                        value={`$${fmt(step4.wrongPS.upper - step4.wrongPS.lower)}K`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-semibold text-slate-700">Correct PS, wrong outcome model</p>
-                      <StatCard
-                        label="Point estimate"
-                        value={`$${fmt(step4.wrongOM.mean)}K`}
-                        formula={"\\widehat{\\text{ATE}}_{\\text{DR}}"}
-                      />
-                      <StatCard
-                        label="95% CI"
-                        value={`[$${fmt(step4.wrongOM.lower)}K, $${fmt(step4.wrongOM.upper)}K]`}
-                        formula={"[q_{0.025},\\; q_{0.975}]"}
-                      />
-                      <StatCard
-                        label="CI width"
-                        value={`$${fmt(step4.wrongOM.upper - step4.wrongOM.lower)}K`}
-                      />
-                    </div>
+                  <div>
+                    <BootstrapHistogramPanel
+                      both={step4.both}
+                      wrongPS={step4.wrongPS}
+                      wrongOM={step4.wrongOM}
+                    />
                   </div>
-
-                  <InfoBox title="What misspecification does to uncertainty" variant="muted">
-                    Notice that when one model is wrong, the point estimate stays
-                    approximately correct — but the CI gets wider. The noisy, wrong
-                    model injects extra variance into the residual correction term.
-                    Misspecification is not free: you pay for it in precision even
-                    when the protection against bias holds.
-                  </InfoBox>
                 </CardContent>
               </Card>
             </StepContent>
@@ -1326,96 +1260,64 @@ export default function DoublyRobustTutorial() {
                     <AlertTriangle className="h-6 w-6" /> The Catch: When Both Models Fail
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4 text-slate-700">
-                  <p>
-                    Doubly robust estimation gives you <em>two chances</em> to get it
-                    right — but it is not magic. If both your outcome model and your
-                    propensity score model are wrong at the same time, neither safety
-                    net is in place and the guarantee of consistency disappears.
-                  </p>
-                  <p>
-                    Degrade both models simultaneously below and watch the DR estimate
-                    drift away from the true $3.20K effect. The bias can become
-                    substantial when both models are far from the truth.
-                  </p>
-
-                  <div className="rounded-xl border p-4 bg-slate-50 space-y-4">
-                    <LabeledSlider
-                      label="Propensity score model quality"
-                      value={psQuality5}
-                      displayValue={psQuality5[0] < 0.15 ? "Random (flat 0.5)" : psQuality5[0] > 0.85 ? "Correctly specified" : `${Math.round(psQuality5[0] * 100)}% of true signal`}
-                      onValueChange={setPsQuality5}
-                      min={0}
-                      max={1}
-                      step={0.05}
-                    />
-                    <LabeledSlider
-                      label="Outcome model quality"
-                      value={omQuality5}
-                      displayValue={omQuality5[0] < 0.15 ? "Intercept only (no covariates)" : omQuality5[0] > 0.85 ? "Correctly specified" : `${Math.round(omQuality5[0] * 100)}% of true signal`}
-                      onValueChange={setOmQuality5}
-                      min={0}
-                      max={1}
-                      step={0.05}
+                <CardContent className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
+                  <div className="space-y-4 text-slate-700">
+                    <p>
+                      Doubly robust gives you <em>two chances</em> — but if both models
+                      are wrong simultaneously, neither safety net is in place and
+                      the guarantee of consistency disappears.
+                    </p>
+                    <div className="rounded-xl border p-4 bg-slate-50 space-y-4">
+                      <LabeledSlider
+                        label="Propensity score model quality"
+                        value={psQuality5}
+                        displayValue={psQuality5[0] < 0.15 ? "Random (flat 0.5)" : psQuality5[0] > 0.85 ? "Correctly specified" : `${Math.round(psQuality5[0] * 100)}% of true signal`}
+                        onValueChange={setPsQuality5}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                      />
+                      <LabeledSlider
+                        label="Outcome model quality"
+                        value={omQuality5}
+                        displayValue={omQuality5[0] < 0.15 ? "Intercept only" : omQuality5[0] > 0.85 ? "Correctly specified" : `${Math.round(omQuality5[0] * 100)}% of true signal`}
+                        onValueChange={setOmQuality5}
+                        min={0}
+                        max={1}
+                        step={0.05}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <StatCard label="True ATE" value="$3.20K" formula={"\\text{ATE}^*"} />
+                      <StatCard label="DR estimate" value={`$${fmt(step5)}K`} formula={"\\widehat{\\text{ATE}}_{\\text{DR}}"} />
+                      <StatCard
+                        label="Bias"
+                        value={`$${fmt(Math.abs(step5 - 3.2))}K`}
+                        formula={"\\left|\\widehat{\\text{ATE}}_{\\text{DR}} - \\text{ATE}^*\\right|"}
+                        className={Math.abs(step5 - 3.2) > 0.5 ? "bg-amber-50" : "bg-emerald-50"}
+                      />
+                    </div>
+                    <InfoBox title="Not doubly magic" variant="warning">
+                      When both models are wrong, the estimate drifts. The protection
+                      zeroes out one bias term at a time — not both simultaneously.
+                    </InfoBox>
+                    <InfoBox title="Practical safeguards" variant="outline">
+                      <ul className="space-y-1 list-disc pl-5 text-sm">
+                        <li><span className="font-semibold">Flexible learners</span> — random forests / gradient boosting</li>
+                        <li><span className="font-semibold">Cross-fitting (AIPW)</span> — prevents overfitting the correction</li>
+                        <li><span className="font-semibold">Sensitivity analysis</span> — degrade models deliberately</li>
+                        <li><span className="font-semibold">Domain knowledge</span> — understand what drives self-selection</li>
+                      </ul>
+                    </InfoBox>
+                  </div>
+                  <div>
+                    <BiasGauge
+                      currentDR={step5}
+                      psQuality={psQuality5[0]}
+                      omQuality={omQuality5[0]}
+                      heatmapCells={BIAS_HEATMAP}
                     />
                   </div>
-
-                  <BiasGauge
-                    currentDR={step5}
-                    psQuality={psQuality5[0]}
-                    omQuality={omQuality5[0]}
-                    heatmapCells={BIAS_HEATMAP}
-                  />
-
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <StatCard
-                      label="True training effect"
-                      value="$3.20K"
-                      formula={"\\text{ATE}^*"}
-                    />
-                    <StatCard
-                      label="DR estimate (current settings)"
-                      value={`$${fmt(step5)}K`}
-                      formula={"\\widehat{\\text{ATE}}_{\\text{DR}}"}
-                    />
-                    <StatCard
-                      label="Bias"
-                      value={`$${fmt(Math.abs(step5 - 3.2))}K`}
-                      formula={"\\left|\\widehat{\\text{ATE}}_{\\text{DR}} - \\text{ATE}^*\\right|"}
-                    />
-                  </div>
-
-                  <InfoBox title="Doubly robust is not doubly magic" variant="warning">
-                    When both models are wrong, the estimate can drift substantially.
-                    The protection is a guarantee about which bias term is zeroed out —
-                    not a guarantee against all forms of model error simultaneously.
-                  </InfoBox>
-
-                  <p className="font-semibold">Practical safeguards:</p>
-                  <InfoBox variant="outline">
-                    <ul className="space-y-2 list-disc pl-5">
-                      <li>
-                        <span className="font-semibold">Use flexible learners.</span>{" "}
-                        Random forests or gradient boosting for both models reduce the
-                        chance that either is badly misspecified.
-                      </li>
-                      <li>
-                        <span className="font-semibold">Cross-fitting (AIPW).</span>{" "}
-                        Fit each model on a held-out fold and predict on the remaining
-                        fold, preventing overfitting from inflating the correction term.
-                      </li>
-                      <li>
-                        <span className="font-semibold">Sensitivity analysis.</span>{" "}
-                        Deliberately degrade each model and check how much the estimate
-                        moves — exactly as you have been doing in this tutorial.
-                      </li>
-                      <li>
-                        <span className="font-semibold">Domain knowledge.</span>{" "}
-                        For the training program, subject-matter expertise about what
-                        drives self-selection is more valuable than any algorithmic fix.
-                      </li>
-                    </ul>
-                  </InfoBox>
                 </CardContent>
               </Card>
             </StepContent>

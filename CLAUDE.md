@@ -37,10 +37,10 @@ Personal website for Sam Miazaki, deployed to GitHub Pages. React 18 + Vite SPA 
 All inline SVG charts in tutorials must follow these conventions for visual consistency:
 
 ### Sizing and layout
-- **Constrain chart width** with `max-w-md` on the wrapper div — charts should NOT span the full content width
+- **Charts go in a side-by-side grid with controls** — use `grid gap-6 md:grid-cols-[0.9fr_1.1fr]` on CardContent, with text/sliders/stats on the left column and charts on the right. Charts should NOT take a full-width row on their own.
 - Standard viewBox: `W=460, H=180–200` for single charts
 - Padding object: `PAD = { top: 14–20, right: 15–20, bottom: 28–36, left: 15–52 }`
-- Use `className="w-full"` on the `<svg>` element (responsive within the `max-w-md` container)
+- Use `className="w-full"` on the `<svg>` element (responsive within the grid column)
 
 ### Chart titles
 - Use `text-[10px] text-slate-400` — small and subtle, not prominent

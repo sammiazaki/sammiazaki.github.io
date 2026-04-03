@@ -28,7 +28,7 @@ You create **SVG visualization components** for tutorials: histograms, density c
 - Consistent padding object: `PAD = { top, right, bottom, left }`
 - Compute plot width/height: `PW = W - PAD.left - PAD.right`
 - Use `className="w-full"` on the SVG element
-- **IMPORTANT: Constrain chart width** — wrap every chart in `<div className="max-w-md">`. Charts must NOT span the full content width; they should be compact.
+- **IMPORTANT: Charts live inside a side-by-side grid layout** — the parent step uses `grid gap-6 md:grid-cols-[0.9fr_1.1fr]` on CardContent, with text/sliders on the left and charts on the right column. Charts should NOT take a full-width row on their own. The grid column constrains the chart width naturally.
 
 ### Scaling Functions
 ```javascript
@@ -59,7 +59,7 @@ function ChartName({ data, param1, param2 }) {
   // Compute derived values
   // Build SVG elements
   return (
-    <div className="max-w-md">
+    <div>
       {title && <div className="text-[10px] text-slate-400 mb-1">{title}</div>}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {/* axis */}

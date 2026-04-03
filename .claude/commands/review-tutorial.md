@@ -62,7 +62,7 @@ Flag but don't block:
 - Very long steps that might benefit from splitting
 - InfoBox variants that seem mismatched (e.g., "success" variant for a warning)
 - Generic/abstract labels in charts and prose (e.g., "Treated"/"Untreated", "X", "Y") where the tutorial has a concrete running example that should be used instead (e.g., "Seminar"/"No seminar", "Prior GPA", "assessment score")
-- SVG charts missing `max-w-md` constraint on their wrapper div (charts should NOT span full content width)
+- Interactive steps not using side-by-side grid layout (`grid gap-6 md:grid-cols-[0.9fr_1.1fr]`) — charts should be beside controls, not below them
 - Chart titles using anything larger than `text-[10px] text-slate-400` (titles should be small and subtle)
 - Grid lines using `strokeWidth` > 0.5 (should be `strokeWidth={0.5}`)
 - `CardContent` or `StepContent` not using `space-y-4` spacing
