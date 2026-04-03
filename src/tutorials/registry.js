@@ -63,6 +63,20 @@ const tutorials = [
     },
     component: lazy(() => import("./doubly-robust/DoublyRobustTutorial.jsx")),
   },
+  {
+    slug: "difference-in-differences",
+    title: "Difference-in-Differences",
+    description:
+      "Learn Difference-in-Differences (DiD), a method that uses control-group trends to build counterfactuals — from the intuition behind parallel trends to the regression implementation.",
+    date: "2026-04-03",
+    tags: ["causal-inference", "econometrics"],
+    source: {
+      title: "Difference-in-Differences — Causal Inference for the Brave and True",
+      author: "Matheus Facure",
+      url: "https://matheusfacure.github.io/python-causality-handbook/13-Difference-in-Differences.html",
+    },
+    component: lazy(() => import("./difference-in-differences/DifferenceInDifferencesTutorial.jsx")),
+  },
 ];
 
 export default tutorials;
