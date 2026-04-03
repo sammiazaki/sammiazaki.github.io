@@ -24,10 +24,11 @@ You create **SVG visualization components** for tutorials: histograms, density c
 
 ### SVG Architecture
 - Use `viewBox` for responsive sizing (never fixed width/height on the SVG element)
-- Standard dimensions: `W=460, H=180` for inline charts (match existing tutorials)
+- Standard dimensions: `W=460, H=180–200` for inline charts (match existing tutorials)
 - Consistent padding object: `PAD = { top, right, bottom, left }`
 - Compute plot width/height: `PW = W - PAD.left - PAD.right`
 - Use `className="w-full"` on the SVG element
+- **IMPORTANT: Constrain chart width** — wrap every chart in `<div className="max-w-md">`. Charts must NOT span the full content width; they should be compact.
 
 ### Scaling Functions
 ```javascript
@@ -41,7 +42,8 @@ const sy = (v) => PAD.top + PH * (1 - v / yMax);          // data → SVG y
 - Pass story-specific `labelA`/`labelB`/`title` props to chart components rather than relying on generic defaults.
 
 ### Visual Style (match existing tutorials)
-- Axis lines: `stroke="#cbd5e1"` (slate-300)
+- Axis lines: `stroke="#cbd5e1"` (slate-200)
+- Grid lines: `stroke="#f1f5f9"` (slate-50), `strokeWidth={0.5}`
 - Tick labels: `className="text-[10px] fill-slate-500"`
 - Legend labels: `className="text-[9px] fill-slate-600"`
 - Primary color: `#1e293b` (slate-800) at `opacity={0.55}`
@@ -49,6 +51,7 @@ const sy = (v) => PAD.top + PH * (1 - v / yMax);          // data → SVG y
 - Success color: `#10b981` (emerald-500)
 - Warning color: `#f59e0b` (amber-500)
 - Bar gaps: `Math.max(barWidth - 1, 1)` for histogram bars
+- Data lines: `strokeWidth={1.5–2.5}`
 
 ### Component Pattern
 ```jsx
@@ -56,8 +59,8 @@ function ChartName({ data, param1, param2 }) {
   // Compute derived values
   // Build SVG elements
   return (
-    <div>
-      {title && <div className="text-sm font-medium text-slate-600 mb-1">{title}</div>}
+    <div className="max-w-md">
+      {title && <div className="text-[10px] text-slate-400 mb-1">{title}</div>}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {/* axis */}
         {/* data marks */}

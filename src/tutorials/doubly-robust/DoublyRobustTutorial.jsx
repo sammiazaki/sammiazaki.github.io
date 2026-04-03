@@ -320,8 +320,8 @@ function StabilityChart({ grid, currentQ, currentDR, xLabel, compLabel, title })
   const dotY = sy(currentDR);
 
   return (
-    <div>
-      {title && <div className="text-xs font-medium text-slate-500 mb-1">{title}</div>}
+    <div className="max-w-md">
+      {title && <div className="text-[10px] text-slate-400 mb-1">{title}</div>}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {/* y-axis */}
         <line x1={PAD.left} y1={PAD.top} x2={PAD.left} y2={PAD.top + PH} stroke="#cbd5e1" />
@@ -449,6 +449,7 @@ function BootstrapHistogramPanel({ both, wrongPS, wrongOM }) {
   ];
 
   return (
+    <div className="max-w-md">
     <svg viewBox={`0 0 ${W} ${TOTAL_H}`} className="w-full">
       {/* x-axis label at bottom */}
       <text
@@ -554,6 +555,7 @@ function BootstrapHistogramPanel({ both, wrongPS, wrongOM }) {
         </g>
       ))}
     </svg>
+    </div>
   );
 }
 
@@ -638,6 +640,7 @@ function BiasGauge({ currentDR, psQuality, omQuality, heatmapCells }) {
   const heatmapAxisTicks = [0, 0.25, 0.5, 0.75, 1];
 
   return (
+    <div className="max-w-md">
     <svg viewBox={`0 0 ${W} ${TOTAL_SVG_H}`} className="w-full">
       {/* ---- Gauge ---- */}
       {/* Background segments */}
@@ -776,6 +779,7 @@ function BiasGauge({ currentDR, psQuality, omQuality, heatmapCells }) {
         OM quality →
       </text>
     </svg>
+    </div>
   );
 }
 

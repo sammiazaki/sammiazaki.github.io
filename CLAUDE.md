@@ -31,3 +31,38 @@ Personal website for Sam Miazaki, deployed to GitHub Pages. React 18 + Vite SPA 
 - UI primitives in `src/components/ui/` are shadcn/ui-style wrappers around Radix UI
 - Math rendering via KaTeX through the `Tex` component
 - Animations via framer-motion
+
+## SVG chart style guide
+
+All inline SVG charts in tutorials must follow these conventions for visual consistency:
+
+### Sizing and layout
+- **Constrain chart width** with `max-w-md` on the wrapper div — charts should NOT span the full content width
+- Standard viewBox: `W=460, H=180–200` for single charts
+- Padding object: `PAD = { top: 14–20, right: 15–20, bottom: 28–36, left: 15–52 }`
+- Use `className="w-full"` on the `<svg>` element (responsive within the `max-w-md` container)
+
+### Chart titles
+- Use `text-[10px] text-slate-400` — small and subtle, not prominent
+- No `uppercase`, no `tracking-wide`, no `font-medium`
+
+### Colors
+- Primary: `#1e293b` (slate-800), Secondary: `#94a3b8` (slate-400)
+- Axes: `#cbd5e1` (slate-200), Grid lines: `#f1f5f9` (slate-50)
+- Success/reference: `#10b981` (emerald-500), Warning: `#f59e0b` (amber-500)
+- Tick labels: `text-[10px] fill-slate-500`, Legend: `text-[9px] fill-slate-600`
+
+### Stroke widths
+- Grid lines: `strokeWidth={0.5}`
+- Axes: `strokeWidth={1}` (default)
+- Data lines/curves: `strokeWidth={1.5–2.5}`
+- Dashed lines: `strokeDasharray="6,3"` or `"4,2"`
+
+### Bar/histogram opacity
+- Bars: `opacity={0.55}` (primary) or `opacity={0.55}` (secondary)
+
+### Step content spacing
+- `<StepContent className="space-y-4">` — always pass `space-y-4`
+- `<CardContent className="space-y-4 text-slate-700">` — consistent inner spacing
+- StatCard grids: `grid gap-3 md:grid-cols-2` or `md:grid-cols-3`
+- Quiz step: `<StepContent className="grid gap-4 md:grid-cols-2">` with QuizCards directly (no Card wrapper)

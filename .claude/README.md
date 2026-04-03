@@ -10,7 +10,7 @@ Agents are specialized sub-processes you can ask Claude to use, or that Claude w
 |---|---|---|
 | **tutorial-scaffolder** | Sonnet | Creates a new tutorial folder, writes the component scaffold following the TutorialShell pattern, and registers it in `registry.js`. Use when starting a new tutorial from scratch. |
 | **content-writer** | Sonnet | Fills in step content — explanations, InfoBoxes, formulas, StatCards (with `formula` hover tooltips), and narrative flow. Give it an outline or reference and it writes the prose. |
-| **viz-designer** | Sonnet | Builds inline SVG chart components (histograms, density plots, scatter charts). Produces pure-SVG React components matching the project's visual style. |
+| **viz-designer** | Sonnet | Builds inline SVG chart components (histograms, density plots, scatter charts). Produces pure-SVG React components matching the project's visual style. Charts are constrained to `max-w-md` width with subtle `text-[10px]` titles. |
 | **quiz-writer** | Sonnet | Reads finished tutorial content and generates QuizCard entries targeting common misconceptions. Produces 3-4 questions per tutorial. |
 | **math-checker** | Opus | Audits tutorials for mathematical correctness — LaTeX syntax, formula accuracy, simulation-formula consistency, statistical claims, and StatCard `formula` props. |
 
@@ -53,4 +53,8 @@ Hooks run automatically — you don't invoke them. They guard against common mis
 
 ## Permissions
 
-Pre-approved commands are listed in `.claude/settings.local.json`. These include git operations, npm/vite commands, and specific web domains (Substack, GitHub, npm, Anthropic API docs) so Claude can fetch reference material without prompting each time.
+Pre-approved commands are listed in `.claude/settings.local.json`. These include git operations, npm/vite commands, Playwright browser tools, and specific web domains (Substack, GitHub, npm, Anthropic API docs, Matheus Facure's causality handbook) so Claude can fetch reference material without prompting each time.
+
+## Style conventions
+
+See `CLAUDE.md` at the repo root for the full SVG chart style guide — chart sizing (`max-w-md`), color palette, stroke widths, spacing classes, and component patterns that all tutorials must follow.
