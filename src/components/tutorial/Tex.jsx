@@ -6,20 +6,22 @@ import katex from "katex";
  * - `display` (default false): when true renders in display mode (centered, larger).
  * - `className`: additional classes on the wrapper span/div.
  */
-export default function Tex({ children, display = false, className = "" }) {
+export default function Tex({ children, math, display = false, block = false, className = "" }) {
+  const source = math ?? children;
+  const isDisplay = display || block;
   const html = useMemo(() => {
     try {
-      return katex.renderToString(children, {
-        displayMode: display,
+      return katex.renderToString(source, {
+        displayMode: isDisplay,
         throwOnError: false,
         strict: false,
       });
     } catch {
-      return children;
+      return source;
     }
-  }, [children, display]);
+  }, [source, isDisplay]);
 
-  if (display) {
+  if (isDisplay) {
     return (
       <div
         className={`overflow-x-auto py-2 ${className}`}

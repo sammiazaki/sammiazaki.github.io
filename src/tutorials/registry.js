@@ -77,6 +77,20 @@ const tutorials = [
     },
     component: lazy(() => import("./difference-in-differences/DifferenceInDifferencesTutorial.jsx")),
   },
+  {
+    slug: "panel-data",
+    title: "Panel Data & Fixed Effects",
+    description:
+      "Use panel structure and within-transformation to eliminate unmeasured time-invariant confounders.",
+    date: "2026-04-04",
+    tags: ["causal inference", "panel data", "fixed effects", "econometrics"],
+    source: {
+      title: "Panel Data and Fixed Effects",
+      author: "Matheus Facure",
+      url: "https://matheusfacure.github.io/python-causality-handbook/14-Panel-Data-and-Fixed-Effects.html",
+    },
+    component: lazy(() => import("./panel-data/PanelDataTutorial.jsx")),
+  },
 ];
 
 export default tutorials;
