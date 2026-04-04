@@ -28,7 +28,8 @@ You create **SVG visualization components** for tutorials: histograms, density c
 - Consistent padding object: `PAD = { top, right, bottom, left }`
 - Compute plot width/height: `PW = W - PAD.left - PAD.right`
 - Use `className="w-full"` on the SVG element
-- **IMPORTANT: Charts live inside a side-by-side grid layout** — the parent step uses `grid gap-6 md:grid-cols-[0.9fr_1.1fr]` on CardContent, with text/sliders on the left and charts on the right column. Charts should NOT take a full-width row on their own. The grid column constrains the chart width naturally.
+- **CRITICAL: Charts must NEVER occupy a full-width row alone.** The parent step uses `grid gap-6 md:grid-cols-[0.9fr_1.1fr]` on CardContent, with text/sliders on the left and charts on the right column. If a step has two charts, put them side by side (`md:grid-cols-2`) or pair each with text. If a chart has no paired content, reconsider whether the chart is needed. The grid column constrains the chart width naturally.
+- **SVG legend and axis labels must not overlap.** Keep legend items at the bottom of the viewBox (e.g., `H - 8`) and x-axis labels above them (e.g., `H - PAD.bottom + 14`). If the chart title already describes both axes, omit redundant axis-label text elements to avoid crowding.
 
 ### Scaling Functions
 ```javascript

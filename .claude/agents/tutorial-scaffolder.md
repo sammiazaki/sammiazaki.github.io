@@ -32,8 +32,10 @@ This discovery step is critical — never assume the pattern; always verify from
 - Follow the TutorialShell pattern exactly as used by sibling tutorials.
 - Include the topic as the title.
 - If a reference URL was provided, include it as a source/reference link in the appropriate prop or section.
-- Add placeholder content sections that guide the author on what to fill in (e.g., `{/* TODO: Add introduction */}`, `{/* TODO: Add step-by-step instructions */}`).
-- Include sensible default metadata (estimated reading time, difficulty level, etc.) if the pattern calls for it.
+- **Include seeded RNG boilerplate** for tutorials with statistical content: `mulberry32` (seeded PRNG) and `boxMuller` (Gaussian noise) helper functions. Generate a panel/dataset with N=50+ observations, confounding structure, treatment assignment, and noise. Pin 1-2 "focal" units with fixed values for pedagogical worked examples. See `src/tutorials/panel-data/PanelDataTutorial.jsx` for the full pattern.
+- **Tex component usage:** Use `<Tex math="..." />` for inline math and `<Tex math="..." display />` for display equations. The `math` prop takes the LaTeX string. Never pass LaTeX as children.
+- Add placeholder content sections that guide the author on what to fill in.
+- Include sensible default metadata if the pattern calls for it.
 
 ### Step 5: Register in registry.js
 - Add the new tutorial's import and entry to registry.js.

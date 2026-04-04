@@ -43,11 +43,25 @@ Each step should have:
 3. Interactive or visual content (sliders, charts, formulas)
 4. A closing insight (InfoBox dark or muted)
 
-### Math
-- Write all LaTeX for KaTeX compatibility
+### Math — the primary teaching tool
+- **Math comes first, charts second.** Every key concept needs a proper derivation with display-mode formulas before any visualization. Show the algebra step by step (write the model, write its average, subtract to cancel confounders, etc.).
+- **Tex component API:** Use `<Tex math="..." />` for inline math and `<Tex math="..." display />` for display (block) equations. The `math` prop takes the LaTeX string. Do NOT pass LaTeX as children.
+- **Plug in concrete numbers after every general formula.** Use template literals so numbers update reactively: `<Tex math={\`\\bar{Y}_i = ${fmt(mean, 1)}\`} />`. A bare formula in isolation is not acceptable — always follow it with the running example's actual values.
+- **Hand calculations are the core pedagogy.** Work through arithmetic step by step (e.g., "Scores: 72, 80, 80. Mean = 77.3. Demeaned: −5.3, +2.7, +2.7"). The reader should be able to reproduce every number by hand.
 - **Critical:** When a formula string contains backslash commands (`\hat`, `\frac`, `\tau`, etc.), you MUST use a JSX expression `formula={"\\hat{\\tau}"}` — NOT a JSX string attribute `formula="\\hat{\\tau}"`. JSX string attributes do not process JS escape sequences, so `\\` stays as two literal backslashes and KaTeX breaks.
 - Use `\text{}` for words inside math, `\operatorname{}` for function names
 - Prefer `\cdot` over `*` for multiplication
+
+### Interactivity — only when purposeful
+- A slider or toggle is justified only when moving it reveals a non-obvious insight (e.g., "bias grows with confounding strength", "time trend contaminates entity FE"). Ask: what does the user learn by moving this that they couldn't learn from a single well-chosen static example?
+- Binary concepts (raw vs. demeaned, entity FE vs. TWFE) use toggle buttons, not sliders.
+- Do NOT add sliders for engagement — if a parameter doesn't change the lesson, hardcode a good default.
+
+### Simulation data
+- Tutorials with statistical content should generate data with a seeded PRNG (use `mulberry32` + `boxMuller` pattern from existing tutorials) for reproducibility.
+- Typical dataset: N=50–600 observations with a clear confounding structure.
+- Compute estimates (OLS, FE, IPW, etc.) in `useMemo` keyed to slider parameters.
+- Pin 1-2 "focal" units with fixed values for the hand-calculation worked examples.
 
 ## Output
 Write directly into the tutorial component file. Preserve any existing visualization components or state management — only fill in the content sections.

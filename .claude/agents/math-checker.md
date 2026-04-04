@@ -20,11 +20,13 @@ You audit tutorials for mathematical correctness. This goes beyond syntax checki
 ## What to Check
 
 ### 1. LaTeX Syntax (KaTeX compatibility)
+- **Tex component API:** The `Tex` component reads LaTeX from the `math` prop: `<Tex math="..." />` for inline, `<Tex math="..." display />` or `<Tex math="..." block />` for display mode. Do NOT pass LaTeX as children — only the `math` prop is read. If you see `<Tex>{"\\beta"}</Tex>`, flag it as a bug.
 - Unmatched braces `{}`
 - Invalid commands (KaTeX supports a subset of LaTeX)
 - Missing `\\` escapes in JSX strings (common bug: `\frac` should be `\\frac` in JS strings)
 - `\text{}` for words, `\operatorname{}` for function names
 - Proper use of `display` mode vs inline
+- **Every display formula must be followed by a concrete numerical example** from the running scenario (e.g., after showing `Ÿ = Y - Ȳ`, plug in Bella Cucina's actual scores). Flag bare formulas with no worked example.
 
 ### 2. Formula Correctness
 - Are the stated formulas mathematically correct?

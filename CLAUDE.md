@@ -25,12 +25,22 @@ Personal website for Sam Miazaki, deployed to GitHub Pages. React 18 + Vite SPA 
 
 **Adding a new tutorial:** Create `src/tutorials/<slug>/<Name>Tutorial.jsx` using the TutorialShell pattern, then add an entry to `registry.js`.
 
+**Simulation pattern:** Tutorials with statistical content use a seeded PRNG (`mulberry32` + `boxMuller` for Gaussian noise) to generate reproducible datasets (typically N=50–600 observations). Data generation functions accept parameters that can be wired to sliders. Compute derived estimates (OLS, FE, etc.) via `useMemo` keyed to the reactive parameters. See `src/tutorials/doubly-robust/` or `src/tutorials/panel-data/` for examples.
+
 ## Key conventions
 
 - Path alias: `@/` maps to `src/` (configured in `vite.config.js`)
 - UI primitives in `src/components/ui/` are shadcn/ui-style wrappers around Radix UI
-- Math rendering via KaTeX through the `Tex` component
+- Math rendering via KaTeX through the `Tex` component — use `<Tex math="..." />` for inline and `<Tex math="..." display />` or `<Tex math="..." block />` for display mode. The `math` prop takes the LaTeX string; `display` and `block` are interchangeable boolean props for centered/large rendering.
 - Animations via framer-motion
+
+## Tutorial pedagogy guidelines
+
+- **Math first, then charts.** Every key concept needs a proper derivation with display-mode formulas. Show the algebra step by step (e.g., write the model, write its time-average, subtract to cancel the confounder). Formulas should use `<Tex math="..." display />`.
+- **Concrete numbers in every formula.** After showing the general form, plug in actual values from the running example. Use template literals to make numbers reactive: `<Tex math={\`\\bar{Y}_i = ${fmt(mean, 1)}\`} />`.
+- **Interactivity only when it demonstrates a point.** A slider is justified when moving it reveals a non-obvious insight (e.g., "bias grows with confounding strength"). A static worked example with concrete numbers is often better. Before adding a slider, identify the specific insight it reveals.
+- **Hand calculations are the primary teaching tool.** Step-by-step arithmetic (e.g., "Scores: 72, 80, 80. Mean = 77.3. Demeaned: −5.3, +2.7, +2.7") is more valuable than a chart or simulation alone. Simulations support hand calculations, not the other way around.
+- **Charts must never sit alone in a full-width row.** Always pair with text, controls, or another chart using the side-by-side grid.
 
 ## SVG chart style guide
 
