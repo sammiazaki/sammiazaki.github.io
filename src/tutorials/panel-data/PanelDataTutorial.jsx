@@ -81,16 +81,13 @@ const YEARS = [1, 2, 3, 4, 5, 6];
  *   restaurants: array of N restaurant objects with metadata
  *   obs: flat array of N*T observation objects
  */
-function generatePanel({ confoundingStrength = 2.0, timeTrend = 2, seed = 42 } = {}) {
+function generatePanel({ confoundingStrength = 2.0, timeTrend = 0, seed = 42 } = {}) {
   const rng = mulberry32(seed);
 
   const restaurants = [];
   for (let i = 0; i < N_RESTAURANTS; i++) {
     const culture = 65 + boxMuller(rng) * 10;
-    // Grant adoption: each restaurant rolls each period starting at t=1
-    // Probability of adopting (and staying adopted) driven by culture
     const grantProb = logistic((culture - 65) * confoundingStrength * 0.15 - 0.5);
-    // Staggered: first eligible at period 2; once treated, stay treated
     let treated = false;
     const grantByPeriod = [];
     for (let t = 0; t < T_PERIODS; t++) {
@@ -116,14 +113,11 @@ function generatePanel({ confoundingStrength = 2.0, timeTrend = 2, seed = 42 } =
   }
 
   // Override focal restaurants for pedagogical clarity
-  // Bella Cucina (i=0): high culture 72, gets grant at period 3
   restaurants[0].culture = 72;
   restaurants[0].grantByPeriod = [0, 0, 1, 1, 1, 1];
-  // Corner Diner (i=1): low culture 50, never gets grant
   restaurants[1].culture = 50;
   restaurants[1].grantByPeriod = [0, 0, 0, 0, 0, 0];
 
-  // Build flat obs array
   const obs = [];
   for (const r of restaurants) {
     const rawScores = [];
@@ -164,11 +158,9 @@ function olsSlope(pairs) {
 }
 
 /**
- * Compute within (FE) estimator from a panel obs array.
- * obs: array of { restaurantId, score, grant }
+ * Compute within (entity FE) estimator from a panel obs array.
  */
 function feEstimator(obs) {
-  // Compute unit means
   const unitMeans = {};
   const unitGrantMeans = {};
   const counts = {};
@@ -181,7 +173,6 @@ function feEstimator(obs) {
     unitMeans[id] /= counts[id];
     unitGrantMeans[id] /= counts[id];
   }
-  // Demean and regress
   const demeaned = obs.map((o) => ({
     score: o.score - unitMeans[o.restaurantId],
     grant: o.grant - unitGrantMeans[o.restaurantId],
@@ -193,8 +184,6 @@ function feEstimator(obs) {
  * Compute Two-Way FE estimator: demean by unit AND period.
  */
 function twfeEstimator(obs) {
-  const nT = T_PERIODS;
-  // Unit means
   const unitSums = {};
   const unitGrantSums = {};
   const unitCounts = {};
@@ -203,12 +192,10 @@ function twfeEstimator(obs) {
     unitGrantSums[o.restaurantId] = (unitGrantSums[o.restaurantId] || 0) + o.grant;
     unitCounts[o.restaurantId] = (unitCounts[o.restaurantId] || 0) + 1;
   }
-  const nUnits = Object.keys(unitSums).length;
   for (const id in unitSums) {
     unitSums[id] /= unitCounts[id];
     unitGrantSums[id] /= unitCounts[id];
   }
-  // Period means
   const periodSums = {};
   const periodGrantSums = {};
   const periodCounts = {};
@@ -232,10 +219,10 @@ function twfeEstimator(obs) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Base dataset (default parameters)                                  */
+/*  Base dataset — no time trend, used by steps 0, 2, 3, 5            */
 /* ------------------------------------------------------------------ */
 
-const BASE_PANEL = generatePanel({ confoundingStrength: 2.0, timeTrend: 2, seed: 42 });
+const BASE_PANEL = generatePanel({ confoundingStrength: 2.0, timeTrend: 0, seed: 42 });
 
 /* ------------------------------------------------------------------ */
 /*  SVG chart constants                                                 */
@@ -336,7 +323,6 @@ function CultureHistogram({ restaurants }) {
         );
       })}
 
-      {/* Vertical markers for focal restaurants */}
       {[{ culture: 72, label: "Bella", color: "#1e293b" }, { culture: 50, label: "Corner", color: "#94a3b8" }].map(({ culture, label, color }) => (
         <g key={label}>
           <line
@@ -354,7 +340,6 @@ function CultureHistogram({ restaurants }) {
         </g>
       ))}
 
-      {/* X-axis ticks */}
       {[40, 50, 60, 70, 80, 90].map((v) => (
         <text key={v} x={PAD.left + ((v - xMin) / (xMax - xMin)) * PW}
           y={H - PAD.bottom + 14} textAnchor="middle" fontSize={9} fill="#64748b">
@@ -414,14 +399,12 @@ function CrossSectionScatter({ obs, periodIdx, naiveBeta, naiveAlpha, trueEffect
           r={3} fill="#1e293b" opacity={0.6} />
       ))}
 
-      {/* Naive OLS line */}
       <line x1={x0Px} x2={x1Px} y1={y0Px} y2={y1Px} stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,3" />
-      {/* True effect line */}
       <line x1={x0Px} x2={x1Px} y1={trueY0Px} y2={trueY1Px} stroke="#10b981" strokeWidth={2} />
 
       <g transform={`translate(${PAD.left + 4}, ${H - 8})`}>
         <line x1={0} x2={14} y1={0} y2={0} stroke="#f59e0b" strokeWidth={2} strokeDasharray="4,2" />
-        <text x={17} y={3} fontSize={9} fill="#475569">Naive OLS (β = {fmt(naiveBeta, 1)} pts)</text>
+        <text x={17} y={3} fontSize={9} fill="#475569">Naive OLS ({fmt(naiveBeta, 1)} pts)</text>
       </g>
       <g transform={`translate(${PAD.left + 170}, ${H - 8})`}>
         <line x1={0} x2={14} y1={0} y2={0} stroke="#10b981" strokeWidth={2} />
@@ -486,101 +469,84 @@ function FocalLineChart({ restaurants, mode }) {
 }
 
 /* ================================================================== */
-/*  Step 2 chart — Score distribution histogram (raw vs demeaned)      */
+/*  Step 2 chart — Spaghetti plot: all 50 trajectories (raw/demeaned) */
 /* ================================================================== */
 
-function ScoreDistributionHistogram({ restaurants, mode }) {
+function SpaghettiPlot({ restaurants, mode }) {
   const isRaw = mode === "raw";
-
-  const allVals = useMemo(() => {
-    return restaurants.flatMap((r) => isRaw ? r.scores : r.demeanedScores);
-  }, [restaurants, mode]);
-
-  const histMin = isRaw ? 20 : -30;
-  const histMax = isRaw ? 110 : 30;
-  const nBins = 14;
-  const binWidth = (histMax - histMin) / nBins;
-
-  const counts = useMemo(() => {
-    const c = new Array(nBins).fill(0);
-    for (const v of allVals) {
-      const idx = Math.min(Math.floor((v - histMin) / binWidth), nBins - 1);
-      if (idx >= 0) c[idx]++;
-    }
-    return c;
-  }, [allVals]);
-
-  const maxCount = Math.max(...counts);
-  const yMin = 0, yMax = maxCount + 1;
-  const yTicks = [0, 5, 10, 15, 20].filter((v) => v <= yMax + 2);
+  const yMin = isRaw ? 30 : -22;
+  const yMax = isRaw ? 105 : 22;
+  const yTicks = isRaw ? [40, 55, 70, 85, 100] : [-15, -5, 5, 15];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       <text x={W / 2} y={10} textAnchor="middle" fontSize={10} fill="#94a3b8">
-        {isRaw ? "distribution of raw scores — all 50 restaurants" : "distribution of demeaned scores — all 50 restaurants"}
+        {isRaw ? "all 50 restaurants — raw trajectories" : "all 50 restaurants — after demeaning"}
       </text>
-      <YAxis ticks={yTicks} yMin={yMin} yMax={yMax} label="Count" />
-      <line x1={PAD.left} x2={W - PAD.right} y1={H - PAD.bottom} y2={H - PAD.bottom} stroke="#cbd5e1" strokeWidth={1} />
+      <YAxis ticks={yTicks} yMin={yMin} yMax={yMax} label={isRaw ? "Score" : "Demeaned"} />
+      <XAxisYears nPeriods={T_PERIODS} />
 
       {!isRaw && (
-        <line x1={PAD.left + ((0 - histMin) / (histMax - histMin)) * PW}
-          x2={PAD.left + ((0 - histMin) / (histMax - histMin)) * PW}
-          y1={PAD.top} y2={H - PAD.bottom}
-          stroke="#10b981" strokeWidth={1} strokeDasharray="4,2" />
+        <line x1={PAD.left} x2={W - PAD.right} y1={scaleY(0, yMin, yMax)} y2={scaleY(0, yMin, yMax)}
+          stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4,2" />
       )}
 
-      {counts.map((c, i) => {
-        const lo = histMin + i * binWidth;
-        const hi = histMin + (i + 1) * binWidth;
-        const xL = PAD.left + ((lo - histMin) / (histMax - histMin)) * PW;
-        const xR = PAD.left + ((hi - histMin) / (histMax - histMin)) * PW;
-        const yTop = scaleY(c, yMin, yMax);
-        const yBot = scaleY(0, yMin, yMax);
+      {/* Background restaurants — thin, faded */}
+      {restaurants.filter((r) => !r.isFocal).map((r) => {
+        const vals = isRaw ? r.scores : r.demeanedScores;
+        const d = vals.map((v, i) => `${i === 0 ? "M" : "L"}${scaleX(i, T_PERIODS)},${scaleY(v, yMin, yMax)}`).join(" ");
+        return <path key={r.id} d={d} fill="none" stroke="#94a3b8" strokeWidth={0.8} opacity={0.18} />;
+      })}
+
+      {/* Focal restaurants — thick, fully visible */}
+      {restaurants.filter((r) => r.isFocal).map((r) => {
+        const vals = isRaw ? r.scores : r.demeanedScores;
+        const pts = vals.map((v, i) => [scaleX(i, T_PERIODS), scaleY(v, yMin, yMax)]);
+        const d = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x},${y}`).join(" ");
         return (
-          <rect key={i} x={xL + 1} y={yTop} width={Math.max(xR - xL - 2, 1)} height={yBot - yTop}
-            fill={isRaw ? "#1e293b" : "#10b981"} opacity={0.55} rx={1} />
+          <g key={r.id}>
+            <path d={d} fill="none" stroke={r.color} strokeWidth={2} />
+            {pts.map(([x, y], i) => (
+              <circle key={i} cx={x} cy={y} r={2.5} fill={r.color} />
+            ))}
+          </g>
         );
       })}
 
-      {/* X-axis labels */}
-      {(isRaw ? [30, 50, 70, 90] : [-20, -10, 0, 10, 20]).map((v) => {
-        const xPx = PAD.left + ((v - histMin) / (histMax - histMin)) * PW;
-        if (xPx < PAD.left || xPx > W - PAD.right) return null;
-        return (
-          <text key={v} x={xPx} y={H - PAD.bottom + 14} textAnchor="middle" fontSize={9} fill="#64748b">{v}</text>
-        );
-      })}
-      <text x={W / 2} y={H - 2} textAnchor="middle" fontSize={9} fill="#94a3b8">
-        {isRaw ? "inspection score" : "score − restaurant mean"}
-      </text>
+      {/* Legend */}
+      {restaurants.filter((r) => r.isFocal).map((r, ri) => (
+        <g key={r.id} transform={`translate(${PAD.left + ri * 130}, ${H - 8})`}>
+          <rect width={10} height={3} y={-1.5} fill={r.color} rx={1} />
+          <text x={13} y={3} fontSize={9} fill="#475569">{r.name}</text>
+        </g>
+      ))}
+      <g transform={`translate(${PAD.left + 270}, ${H - 8})`}>
+        <line x1={0} x2={10} y1={0} y2={0} stroke="#94a3b8" strokeWidth={0.8} opacity={0.4} />
+        <text x={13} y={3} fontSize={9} fill="#94a3b8">48 other restaurants</text>
+      </g>
     </svg>
   );
 }
 
 /* ================================================================== */
-/*  Step 3 chart — Demeaned score vs demeaned grant (money plot)       */
+/*  Step 3 chart — Demeaned score vs demeaned grant (entity FE)        */
 /* ================================================================== */
 
 function WithinScatterChart({ obs, feSlope }) {
-  // Build two-way demeaned obs (unit + period means, add back grand mean)
   const demeaned = useMemo(() => {
     const unitSums = {}, unitGrantSums = {}, unitCounts = {};
-    const periodSums = {}, periodGrantSums = {}, periodCounts = {};
     for (const o of obs) {
       unitSums[o.restaurantId] = (unitSums[o.restaurantId] || 0) + o.score;
       unitGrantSums[o.restaurantId] = (unitGrantSums[o.restaurantId] || 0) + o.grant;
       unitCounts[o.restaurantId] = (unitCounts[o.restaurantId] || 0) + 1;
-      periodSums[o.period] = (periodSums[o.period] || 0) + o.score;
-      periodGrantSums[o.period] = (periodGrantSums[o.period] || 0) + o.grant;
-      periodCounts[o.period] = (periodCounts[o.period] || 0) + 1;
     }
-    for (const id in unitSums) { unitSums[id] /= unitCounts[id]; unitGrantSums[id] /= unitCounts[id]; }
-    for (const t in periodSums) { periodSums[t] /= periodCounts[t]; periodGrantSums[t] /= periodCounts[t]; }
-    const grandY = obs.reduce((s, o) => s + o.score, 0) / obs.length;
-    const grandD = obs.reduce((s, o) => s + o.grant, 0) / obs.length;
+    for (const id in unitSums) {
+      unitSums[id] /= unitCounts[id];
+      unitGrantSums[id] /= unitCounts[id];
+    }
     return obs.map((o) => ({
-      dY: o.score - unitSums[o.restaurantId] - periodSums[o.period] + grandY,
-      dD: o.grant - unitGrantSums[o.restaurantId] - periodGrantSums[o.period] + grandD,
+      dY: o.score - unitSums[o.restaurantId],
+      dD: o.grant - unitGrantSums[o.restaurantId],
       isFocal: o.isFocal,
     }));
   }, [obs]);
@@ -596,7 +562,6 @@ function WithinScatterChart({ obs, feSlope }) {
     return scaleY(dY, yMin, yMax);
   }
 
-  // FE regression line: dY = feSlope * dD, through origin
   const lineX0 = xMin, lineX1 = xMax;
   const lineY0 = feSlope * lineX0, lineY1 = feSlope * lineX1;
 
@@ -607,7 +572,6 @@ function WithinScatterChart({ obs, feSlope }) {
       </text>
       <YAxis ticks={yTicks} yMin={yMin} yMax={yMax} label="Score − mean" />
 
-      {/* X axis */}
       <line x1={PAD.left} x2={W - PAD.right} y1={H - PAD.bottom} y2={H - PAD.bottom} stroke="#cbd5e1" strokeWidth={1} />
       {[-0.5, 0, 0.5].map((v) => (
         <g key={v}>
@@ -615,17 +579,14 @@ function WithinScatterChart({ obs, feSlope }) {
           <line x1={px(v)} x2={px(v)} y1={PAD.top} y2={H - PAD.bottom} stroke="#f1f5f9" strokeWidth={0.5} />
         </g>
       ))}
-      {/* Zero reference lines */}
       <line x1={PAD.left} x2={W - PAD.right} y1={py(0)} y2={py(0)} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4,2" />
       <line x1={px(0)} x2={px(0)} y1={PAD.top} y2={H - PAD.bottom} stroke="#cbd5e1" strokeWidth={1} strokeDasharray="4,2" />
 
-      {/* Points */}
       {demeaned.map((d, i) => (
         <circle key={i} cx={px(d.dD)} cy={py(d.dY)} r={d.isFocal ? 4 : 2.5}
           fill={d.isFocal ? "#f59e0b" : "#1e293b"} opacity={d.isFocal ? 0.9 : 0.35} />
       ))}
 
-      {/* FE regression line */}
       <line x1={px(lineX0)} x2={px(lineX1)} y1={py(lineY0)} y2={py(lineY1)}
         stroke="#10b981" strokeWidth={2} />
 
@@ -656,8 +617,7 @@ function TimeTrendChart({ obs, timeTrend }) {
   const yMin = 40, yMax = 110;
   const yTicks = [50, 60, 70, 80, 90, 100];
 
-  // Trend line: intercept at year 1, slope = timeTrend
-  const trendBase = yearMeans[0] - 0 * timeTrend; // year 0 intercept
+  const trendBase = yearMeans[0];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
@@ -667,15 +627,12 @@ function TimeTrendChart({ obs, timeTrend }) {
       <YAxis ticks={yTicks} yMin={yMin} yMax={yMax} label="Avg score" />
       <XAxisYears nPeriods={T_PERIODS} />
 
-      {/* Trend line */}
-      {[0, T_PERIODS - 1].map((_, i) => null)}
       <line
         x1={scaleX(0, T_PERIODS)} x2={scaleX(T_PERIODS - 1, T_PERIODS)}
         y1={scaleY(trendBase, yMin, yMax)} y2={scaleY(trendBase + (T_PERIODS - 1) * timeTrend, yMin, yMax)}
         stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="6,3"
       />
 
-      {/* Observed averages */}
       <path
         d={yearMeans.map((v, i) => `${i === 0 ? "M" : "L"}${scaleX(i, T_PERIODS)},${scaleY(v, yMin, yMax)}`).join(" ")}
         fill="none" stroke="#1e293b" strokeWidth={2}
@@ -691,6 +648,97 @@ function TimeTrendChart({ obs, timeTrend }) {
       <g transform={`translate(${PAD.left + 165}, ${H - 8})`}>
         <line x1={0} x2={14} y1={0} y2={0} stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
         <text x={17} y={3} fontSize={9} fill="#475569">Time trend (+{timeTrend} pts/yr)</text>
+      </g>
+    </svg>
+  );
+}
+
+/* ================================================================== */
+/*  Step 5 chart — Time-varying confounder "what if" for Bella Cucina */
+/* ================================================================== */
+
+const RENOVATION_EFFECT = 8;
+
+function ConfounderWhatIfChart({ bellaScores }) {
+  const yMin = 55, yMax = 100;
+  const yTicks = [60, 70, 80, 90];
+
+  // Hypothetical: Bella also gets an 8-pt renovation at Yr 3 (period index 2)
+  const hypoScores = bellaScores.map((s, t) => t >= 2 ? s + RENOVATION_EFFECT : s);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      <text x={W / 2} y={10} textAnchor="middle" fontSize={10} fill="#94a3b8">
+        Bella Cucina: grant only vs. grant + renovation
+      </text>
+      <YAxis ticks={yTicks} yMin={yMin} yMax={yMax} label="Score" />
+      <XAxisYears nPeriods={T_PERIODS} />
+
+      {/* Shaded region between the two lines from Year 3 onward */}
+      {(() => {
+        const pts = [];
+        for (let t = 2; t < T_PERIODS; t++) {
+          pts.push([scaleX(t, T_PERIODS), scaleY(hypoScores[t], yMin, yMax)]);
+        }
+        for (let t = T_PERIODS - 1; t >= 2; t--) {
+          pts.push([scaleX(t, T_PERIODS), scaleY(bellaScores[t], yMin, yMax)]);
+        }
+        const d = pts.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x},${y}`).join(" ") + " Z";
+        return <path d={d} fill="#f59e0b" opacity={0.12} />;
+      })()}
+
+      {/* Actual trajectory (grant only) */}
+      <path
+        d={bellaScores.map((v, i) => `${i === 0 ? "M" : "L"}${scaleX(i, T_PERIODS)},${scaleY(v, yMin, yMax)}`).join(" ")}
+        fill="none" stroke="#1e293b" strokeWidth={2}
+      />
+      {bellaScores.map((v, i) => (
+        <circle key={i} cx={scaleX(i, T_PERIODS)} cy={scaleY(v, yMin, yMax)} r={3} fill="#1e293b" />
+      ))}
+
+      {/* Hypothetical trajectory (grant + renovation) */}
+      <path
+        d={hypoScores.map((v, i) => `${i === 0 ? "M" : "L"}${scaleX(i, T_PERIODS)},${scaleY(v, yMin, yMax)}`).join(" ")}
+        fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,3"
+      />
+      {hypoScores.map((v, i) => (
+        <circle key={i} cx={scaleX(i, T_PERIODS)} cy={scaleY(v, yMin, yMax)} r={3}
+          fill="#f59e0b" opacity={i >= 2 ? 0.9 : 0.4} />
+      ))}
+
+      {/* Annotation: bracket showing the 8-pt renovation gap */}
+      {(() => {
+        const t = 4; // Year 5
+        const xPx = scaleX(t, T_PERIODS) + 14;
+        const yActual = scaleY(bellaScores[t], yMin, yMax);
+        const yHypo = scaleY(hypoScores[t], yMin, yMax);
+        return (
+          <g>
+            <line x1={xPx} x2={xPx} y1={yActual} y2={yHypo} stroke="#f59e0b" strokeWidth={1} />
+            <line x1={xPx - 3} x2={xPx + 3} y1={yActual} y2={yActual} stroke="#f59e0b" strokeWidth={1} />
+            <line x1={xPx - 3} x2={xPx + 3} y1={yHypo} y2={yHypo} stroke="#f59e0b" strokeWidth={1} />
+            <text x={xPx + 6} y={(yActual + yHypo) / 2 + 3} fontSize={8} fill="#d97706">
+              +{RENOVATION_EFFECT} pts
+            </text>
+          </g>
+        );
+      })()}
+
+      {/* "grant starts" annotation */}
+      <line
+        x1={scaleX(2, T_PERIODS)} x2={scaleX(2, T_PERIODS)}
+        y1={PAD.top} y2={H - PAD.bottom}
+        stroke="#cbd5e1" strokeWidth={0.5} strokeDasharray="3,2"
+      />
+      <text x={scaleX(2, T_PERIODS) + 3} y={PAD.top + 8} fontSize={7} fill="#94a3b8">grant starts</text>
+
+      <g transform={`translate(${PAD.left + 4}, ${H - 8})`}>
+        <line x1={0} x2={14} y1={0} y2={0} stroke="#1e293b" strokeWidth={2} />
+        <text x={17} y={3} fontSize={9} fill="#475569">Grant only (reality)</text>
+      </g>
+      <g transform={`translate(${PAD.left + 160}, ${H - 8})`}>
+        <line x1={0} x2={14} y1={0} y2={0} stroke="#f59e0b" strokeWidth={2} strokeDasharray="4,2" />
+        <text x={17} y={3} fontSize={9} fill="#475569">Grant + renovation (what-if)</text>
       </g>
     </svg>
   );
@@ -715,58 +763,69 @@ const LESSONS = [
 /* ================================================================== */
 
 export default function PanelDataTutorial() {
-  // Step 1 controls
   const [confoundingStrength, setConfoundingStrength] = useState(2.0);
-
-  // Step 2 controls
   const [showDemeaned, setShowDemeaned] = useState(false);
-
-  // Step 4 controls
   const [timeTrend, setTimeTrend] = useState(2);
   const [showTWFE, setShowTWFE] = useState(false);
 
   /* ------------------------------------------------------------------ */
-  /*  Reactive panel dataset (steps 1 and onwards)                      */
+  /*  Stable data from BASE_PANEL — used by steps 0, 2, 3, 5           */
   /* ------------------------------------------------------------------ */
 
-  const panel = useMemo(
-    () => generatePanel({ confoundingStrength, timeTrend, seed: 42 }),
-    [confoundingStrength, timeTrend]
-  );
-
-  const { restaurants, obs } = panel;
-
-  /* ---- Step 1 derived: cross-section at Year 4 (grants well under way) ---- */
-  const crossSectionObs = useMemo(
-    () => obs.filter((o) => o.period === 3),
-    [obs]
-  );
-  const naiveCSOLS = useMemo(() => {
-    const n = crossSectionObs.length;
-    if (n === 0) return { beta: 0, alpha: 0 };
-    const mD = crossSectionObs.reduce((s, o) => s + o.grant, 0) / n;
-    const mY = crossSectionObs.reduce((s, o) => s + o.score, 0) / n;
-    const num = crossSectionObs.reduce((s, o) => s + (o.grant - mD) * (o.score - mY), 0);
-    const den = crossSectionObs.reduce((s, o) => s + (o.grant - mD) ** 2, 0);
-    const beta = den > 1e-10 ? num / den : 0;
-    const alpha = mY - beta * mD;
-    return { beta, alpha };
-  }, [crossSectionObs]);
-
-  const csBias = naiveCSOLS.beta - TRUE_EFFECT;
-
-  /* ---- Step 2 focal restaurant data ---- */
+  const { restaurants, obs } = BASE_PANEL;
   const bellaData = restaurants[0];
   const cornerData = restaurants[1];
 
-  /* ---- Step 3 derived: full panel estimates ---- */
-  const pooledBeta = useMemo(() => olsSlope(obs.map((o) => ({ grant: o.grant, score: o.score }))), [obs]);
-  // Step 3 uses TWFE as "the" FE estimator so the reader sees FE recover the true effect
-  const feBeta = useMemo(() => twfeEstimator(obs), [obs]);
+  /* ------------------------------------------------------------------ */
+  /*  Step 1 — own reactive panel driven by confounding slider          */
+  /* ------------------------------------------------------------------ */
 
-  /* ---- Step 4 derived ---- */
+  const step1Panel = useMemo(
+    () => generatePanel({ confoundingStrength, timeTrend: 0, seed: 42 }),
+    [confoundingStrength]
+  );
+
+  const step1CrossSection = useMemo(
+    () => step1Panel.obs.filter((o) => o.period === 3),
+    [step1Panel]
+  );
+
+  const naiveCSOLS = useMemo(() => {
+    const pairs = step1CrossSection;
+    const n = pairs.length;
+    if (n === 0) return { beta: 0, alpha: 0 };
+    const mD = pairs.reduce((s, o) => s + o.grant, 0) / n;
+    const mY = pairs.reduce((s, o) => s + o.score, 0) / n;
+    const num = pairs.reduce((s, o) => s + (o.grant - mD) * (o.score - mY), 0);
+    const den = pairs.reduce((s, o) => s + (o.grant - mD) ** 2, 0);
+    const beta = den > 1e-10 ? num / den : 0;
+    const alpha = mY - beta * mD;
+    return { beta, alpha };
+  }, [step1CrossSection]);
+
+  const csBias = naiveCSOLS.beta - TRUE_EFFECT;
+
+  /* ------------------------------------------------------------------ */
+  /*  Steps 2–3 — derived from stable BASE_PANEL                       */
+  /* ------------------------------------------------------------------ */
+
+  const pooledBeta = useMemo(
+    () => olsSlope(obs.map((o) => ({ grant: o.grant, score: o.score }))),
+    [obs]
+  );
   const entityFEBeta = useMemo(() => feEstimator(obs), [obs]);
-  const twfeBeta = useMemo(() => twfeEstimator(obs), [obs]);
+
+  /* ------------------------------------------------------------------ */
+  /*  Step 4 — own reactive panel driven by time trend slider           */
+  /* ------------------------------------------------------------------ */
+
+  const step4Panel = useMemo(
+    () => generatePanel({ confoundingStrength: 2.0, timeTrend, seed: 42 }),
+    [timeTrend]
+  );
+
+  const step4EntityFE = useMemo(() => feEstimator(step4Panel.obs), [step4Panel]);
+  const step4TWFE = useMemo(() => twfeEstimator(step4Panel.obs), [step4Panel]);
 
   return (
     <TutorialShell
@@ -826,16 +885,16 @@ export default function PanelDataTutorial() {
                         We index outcomes as <Tex math="Y_{it}" /> — the inspection score of
                         restaurant <Tex math="i" /> in year <Tex math="t" />. Treatment{" "}
                         <Tex math="D_{it} = 1" /> if the restaurant held a grant that year.
-                        The full model is:
+                        The model is:
                         <div className="mt-2">
                           <Tex
-                            math="Y_{it} = \alpha_i + \delta_t + \beta D_{it} + \varepsilon_{it}"
+                            math="Y_{it} = \alpha_i + \beta D_{it} + \varepsilon_{it}"
                             display
                           />
                         </div>
                         where <Tex math="\alpha_i" /> absorbs all time-invariant restaurant
-                        differences (including <Tex math="u_i" />) and <Tex math="\delta_t" />{" "}
-                        absorbs all period shocks.
+                        differences (including culture <Tex math="u_i" />). We will add time
+                        effects <Tex math="\delta_t" /> later.
                       </InfoBox>
                       <div className="grid gap-3 grid-cols-3">
                         <StatCard label="Restaurants (i)" value="50 units" formula={"i = 1, \\ldots, 50"} />
@@ -843,7 +902,6 @@ export default function PanelDataTutorial() {
                         <StatCard label="Total observations" value="300 rows" formula={"50 \\times 6"} />
                       </div>
 
-                      {/* Stylised table for two focal restaurants */}
                       <div className="rounded-lg border bg-white p-3 text-sm">
                         <p className="text-[10px] text-slate-400 mb-2 text-center">
                           Two focal restaurants (years 1–3 shown)
@@ -960,7 +1018,7 @@ export default function PanelDataTutorial() {
                     </div>
 
                     <CrossSectionScatter
-                      obs={obs}
+                      obs={step1Panel.obs}
                       periodIdx={3}
                       naiveBeta={naiveCSOLS.beta}
                       naiveAlpha={naiveCSOLS.alpha}
@@ -1036,7 +1094,6 @@ export default function PanelDataTutorial() {
 
                   <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-4">
-                      {/* Toggle raw / demeaned */}
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => setShowDemeaned(false)}
@@ -1090,7 +1147,7 @@ export default function PanelDataTutorial() {
                         </InfoBox>
                       )}
 
-                      <InfoBox variant="formula" title="Derivation with Bella Cucina's numbers">
+                      <InfoBox variant="formula" title="Hand calculation — Bella Cucina">
                         <p className="mt-1">
                           Raw scores (<Tex math="Y_{it}" />):{" "}
                           <Tex math={`(${bellaData.scores.map(s => fmt(s, 1)).join(',\\; ')})`} />.
@@ -1103,7 +1160,7 @@ export default function PanelDataTutorial() {
                           → <Tex math={`(${bellaData.demeanedScores.map(s => fmt(s, 1)).join(',\\; ')})`} />.
                         </p>
                         <p className="mt-1">
-                          The culture component (<Tex math="\gamma u_i = 72" />) is gone.
+                          The culture component (<Tex math={`\\gamma u_i = ${fmt(bellaData.culture, 0)}`} />) is gone.
                           The jump at Yr 3 ({fmt(bellaData.demeanedScores[2] - bellaData.demeanedScores[1], 1)} pts)
                           isolates the grant effect.
                         </p>
@@ -1113,14 +1170,13 @@ export default function PanelDataTutorial() {
                     <FocalLineChart restaurants={restaurants} mode={showDemeaned ? "demeaned" : "raw"} />
                   </div>
 
-                  {/* Distribution histogram across all 50 restaurants — side-by-side with explanation */}
                   <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-4">
                       <p className="text-sm text-slate-600">
-                        The effect is even more dramatic across all 50 restaurants. Raw scores span
-                        roughly 40 to 100 points — driven by culture heterogeneity. After demeaning,
-                        every series centres near zero; the distribution collapses to a tight band
-                        around the grant effect.
+                        The spaghetti plot on the right shows all 50 restaurants at once. In raw
+                        mode, trajectories fan out across a 60-point range — each restaurant lives
+                        at its own level, set by culture. After demeaning, every trajectory collapses
+                        toward zero. The spread shrinks from 60+ points to roughly ±15.
                       </p>
                       <InfoBox variant="formula" title="Full-panel demeaning by hand">
                         <p className="mt-1">
@@ -1133,13 +1189,13 @@ export default function PanelDataTutorial() {
                           2. Subtract: <Tex math={`\\ddot{Y}_{it} = Y_{it} - \\bar{Y}_i`} /> for each year.
                         </p>
                         <p className="mt-1">
-                          This centres every restaurant at zero, removing{" "}
-                          <Tex math="\alpha_i" /> (culture). The raw histogram spreads across
-                          60+ points; the demeaned histogram collapses to roughly ±15 points.
+                          Each restaurant's line shifts to centre at zero, removing{" "}
+                          <Tex math="\alpha_i" /> (culture). The only remaining vertical movement
+                          is the grant effect and noise.
                         </p>
                       </InfoBox>
                     </div>
-                    <ScoreDistributionHistogram restaurants={restaurants} mode={showDemeaned ? "demeaned" : "raw"} />
+                    <SpaghettiPlot restaurants={restaurants} mode={showDemeaned ? "demeaned" : "raw"} />
                   </div>
                 </CardContent>
               </Card>
@@ -1183,16 +1239,14 @@ export default function PanelDataTutorial() {
                   <p className="text-sm text-slate-600">
                     All three are consistent estimators of <Tex math="\beta" /> under strict
                     exogeneity. Within and LSDV are numerically identical. First differences
-                    uses consecutive changes (e.g., Bella Cucina Yr 3 − Yr 2 ={" "}
-                    {fmt(bellaData.scores[2] - bellaData.scores[1], 1)} pts) instead of deviations
-                    from the mean — it also kills <Tex math="\alpha_i" /> because{" "}
+                    uses consecutive changes instead of deviations from the mean — it also
+                    kills <Tex math="\alpha_i" /> because{" "}
                     <Tex math="\alpha_i - \alpha_i = 0" />.
                   </p>
 
-                  {/* Hand calculation for Bella Cucina */}
                   <InfoBox variant="formula" title="Within estimator by hand — Bella Cucina">
                     <p className="mt-1">
-                      Bella Cucina's grant status across 6 years: <Tex math="D_i = (0,0,1,1,1,1)" />.
+                      Grant status across 6 years: <Tex math="D_i = (0,0,1,1,1,1)" />.
                       Grant mean: <Tex math={`\\bar{D}_i = \\tfrac{4}{6} = ${fmt(4/6, 3)}`} />.
                     </p>
                     <p className="mt-1">
@@ -1205,14 +1259,32 @@ export default function PanelDataTutorial() {
                     </p>
                     <p className="mt-1">
                       The within estimator regresses demeaned scores on demeaned grants across{" "}
-                      <em>all</em> restaurants. The chart below shows this regression for the
-                      full panel — the emerald line's slope is <Tex math={`\\hat\\beta_{FE} = ${fmt(feBeta, 2)}`} />.
+                      <em>all</em> 50 restaurants. The emerald line in the chart is the
+                      slope: <Tex math={`\\hat\\beta_{\\text{FE}} = ${fmt(entityFEBeta, 2)}`} />.
+                    </p>
+                  </InfoBox>
+
+                  <InfoBox variant="formula" title="First differences by hand — Bella Cucina">
+                    <p className="mt-1">
+                      Year-to-year score changes (<Tex math="\Delta Y_{it} = Y_{it} - Y_{i,t-1}" />):
+                    </p>
+                    <p className="mt-1">
+                      <Tex math={`(${bellaData.scores.slice(1).map((s, i) => fmt(s - bellaData.scores[i], 1)).join(',\\; ')})`} />
+                    </p>
+                    <p className="mt-1">
+                      Grant changes (<Tex math="\Delta D_{it}" />): <Tex math="(0,\, 1,\, 0,\, 0,\, 0)" />.
+                      Only one transition — Bella Cucina adopts the grant at Year 3.
+                    </p>
+                    <p className="mt-1">
+                      The Yr 2→3 score jump is{" "}
+                      <Tex math={`\\Delta Y = ${fmt(bellaData.scores[2], 1)} - ${fmt(bellaData.scores[1], 1)} = ${fmt(bellaData.scores[2] - bellaData.scores[1], 1)}`} /> pts.
+                      This single-restaurant difference captures the grant effect plus noise.
+                      FD pools these transitions across all switchers in the panel.
                     </p>
                   </InfoBox>
 
                   <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-4">
-                      {/* Regression table */}
                       <div className="rounded-lg border bg-white p-4 text-sm">
                         <p className="text-[10px] text-slate-400 mb-3 text-center">
                           Regression output (50 restaurants × 6 years = 300 obs)
@@ -1229,10 +1301,10 @@ export default function PanelDataTutorial() {
                             <tr>
                               <td className="py-1.5 pr-3">Grant received</td>
                               <td className="text-right py-1.5 px-2 font-mono text-amber-700">
-                                {fmt(pooledBeta, 2)}*
+                                {fmt(pooledBeta, 2)}
                               </td>
                               <td className="text-right py-1.5 pl-2 font-mono text-emerald-700">
-                                {fmt(feBeta, 2)}*
+                                {fmt(entityFEBeta, 2)}
                               </td>
                             </tr>
                             <tr>
@@ -1246,42 +1318,48 @@ export default function PanelDataTutorial() {
                               <td className="text-right py-1.5 pl-2 font-mono">Yes</td>
                             </tr>
                             <tr>
+                              <td className="py-1.5 pr-3">Time FE</td>
+                              <td className="text-right py-1.5 px-2 font-mono text-slate-400">No</td>
+                              <td className="text-right py-1.5 pl-2 font-mono text-slate-400">No</td>
+                            </tr>
+                            <tr>
                               <td className="py-1.5 pr-3 text-slate-500">Bias</td>
                               <td className="text-right py-1.5 px-2 font-mono text-amber-600">
                                 +{fmt(pooledBeta - TRUE_EFFECT, 2)}
                               </td>
                               <td className="text-right py-1.5 pl-2 font-mono text-emerald-600">
-                                {fmt(feBeta - TRUE_EFFECT, 2)}
+                                {fmt(entityFEBeta - TRUE_EFFECT, 2)}
                               </td>
                             </tr>
                           </tbody>
                         </table>
                         <p className="text-[10px] text-slate-400 mt-3">
-                          * p &lt; 0.05. Pooled OLS bias is structural — culture confounding.
+                          Pooled OLS bias is structural — driven by culture confounding.
+                          Entity FE eliminates the time-invariant culture confounder. The
+                          remaining deviation from 5.00 is sampling noise.
                         </p>
                       </div>
 
                       <div className="grid gap-3 grid-cols-3">
                         <StatCard
-                          label="True β"
+                          label="True effect"
                           value={`+${TRUE_EFFECT}.0`}
                           formula={"\\beta = 5"}
                         />
                         <StatCard
-                          label="FE β̂"
-                          value={`+${fmt(feBeta, 2)}`}
+                          label="Entity FE"
+                          value={`+${fmt(entityFEBeta, 2)}`}
                           formula={"\\hat{\\beta}_{\\text{FE}}"}
                         />
                         <StatCard
-                          label="OLS β̂"
+                          label="Pooled OLS"
                           value={`+${fmt(pooledBeta, 2)}`}
                           formula={"\\hat{\\beta}_{\\text{OLS}}"}
                         />
                       </div>
                     </div>
 
-                    {/* Within scatter — the money plot */}
-                    <WithinScatterChart obs={obs} feSlope={feBeta} />
+                    <WithinScatterChart obs={obs} feSlope={entityFEBeta} />
                   </div>
                 </CardContent>
               </Card>
@@ -1302,7 +1380,7 @@ export default function PanelDataTutorial() {
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
-                    Unit fixed effects <Tex math="\alpha_i" /> control for time-invariant
+                    Entity fixed effects <Tex math="\alpha_i" /> control for time-invariant
                     differences across restaurants. But what about shocks that affect{" "}
                     <em>all</em> restaurants in a given year — like a new national hygiene
                     regulation raising everyone's scores? These period-specific shocks are
@@ -1323,9 +1401,10 @@ export default function PanelDataTutorial() {
                   />
                   <p>
                     This eliminates both <Tex math="\alpha_i" /> (unit culture) and{" "}
-                    <Tex math="\delta_t" /> (period shocks). In our simulation the time trend
-                    adds <em>{timeTrend} pts per year</em> to every restaurant. If grant adoption
-                    correlates with time, entity-only FE conflates the trend with the grant.
+                    <Tex math="\delta_t" /> (period shocks). In the simulation below, the time
+                    trend adds <em>{timeTrend} pts per year</em> to every restaurant. Because
+                    grant adoption is staggered across time, entity-only FE conflates the
+                    upward trend with the grant effect.
                   </p>
 
                   <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
@@ -1340,7 +1419,6 @@ export default function PanelDataTutorial() {
                         step={1}
                       />
 
-                      {/* Toggle entity-only vs TWFE */}
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => setShowTWFE(false)}
@@ -1372,12 +1450,12 @@ export default function PanelDataTutorial() {
                         />
                         <StatCard
                           label={showTWFE ? "TWFE estimate" : "Entity FE estimate"}
-                          value={`+${fmt(showTWFE ? twfeBeta : entityFEBeta, 2)} pts`}
+                          value={`+${fmt(showTWFE ? step4TWFE : step4EntityFE, 2)} pts`}
                           formula={showTWFE ? "\\hat{\\beta}_{\\text{TWFE}}" : "\\hat{\\beta}_{\\text{FE}}"}
                         />
                         <StatCard
                           label="Bias"
-                          value={`${fmt((showTWFE ? twfeBeta : entityFEBeta) - TRUE_EFFECT, 2)} pts`}
+                          value={`${fmt((showTWFE ? step4TWFE : step4EntityFE) - TRUE_EFFECT, 2)} pts`}
                           formula={"\\hat{\\beta} - \\beta"}
                         />
                       </div>
@@ -1385,34 +1463,34 @@ export default function PanelDataTutorial() {
                       {!showTWFE ? (
                         <InfoBox variant="warning" title="Time trend contaminates entity FE">
                           With a {timeTrend} pt/yr trend and staggered adoption, entity-only FE
-                          gives {fmt(entityFEBeta, 2)} pts — {timeTrend > 0 ? "above" : "at"} the
+                          gives {fmt(step4EntityFE, 2)} pts — {step4EntityFE > TRUE_EFFECT + 0.5 ? "above" : "near"} the
                           true {TRUE_EFFECT} pts. Later-treated restaurants look like they improved
                           partly because of the trend, not the grant. TWFE would absorb this with{" "}
                           <Tex math="\hat\delta_t" />.
                         </InfoBox>
                       ) : (
                         <InfoBox variant="success" title="Time effects absorbed">
-                          TWFE gives {fmt(twfeBeta, 2)} pts — very close to the true {TRUE_EFFECT} pts.
+                          TWFE gives {fmt(step4TWFE, 2)} pts — very close to the true {TRUE_EFFECT} pts.
                           The year-by-year dummies <Tex math="\hat\delta_t" /> soak up the{" "}
-                          {timeTrend} pt/yr regulatory trend. What remains is the grant's
+                          {timeTrend} pt/yr trend. What remains is the grant's
                           within-restaurant, within-year causal signal.
                         </InfoBox>
                       )}
                     </div>
 
-                    <TimeTrendChart obs={obs} timeTrend={timeTrend} />
+                    <TimeTrendChart obs={step4Panel.obs} timeTrend={timeTrend} />
                   </div>
 
                   <InfoBox variant="formula" title="Comparing entity FE and TWFE — live numbers">
                     <p className="mt-1">
-                      Entity FE: <Tex math={`\\hat\\beta_{\\text{FE}} = ${fmt(entityFEBeta, 2)}`} />.
-                      This picks up <Tex math={`\\beta + \\text{trend bias} = 5.0 + ${fmt(entityFEBeta - TRUE_EFFECT, 2)} = ${fmt(entityFEBeta, 2)}`} />.
+                      Entity FE: <Tex math={`\\hat\\beta_{\\text{FE}} = ${fmt(step4EntityFE, 2)}`} />.
+                      This picks up <Tex math={`\\beta + \\text{trend bias} = 5.0 + ${fmt(step4EntityFE - TRUE_EFFECT, 2)} = ${fmt(step4EntityFE, 2)}`} />.
                     </p>
                     <p className="mt-1">
-                      TWFE: <Tex math={`\\hat\\beta_{\\text{TWFE}} = ${fmt(twfeBeta, 2)}`} />.
+                      TWFE: <Tex math={`\\hat\\beta_{\\text{TWFE}} = ${fmt(step4TWFE, 2)}`} />.
                       The time dummies absorb <Tex math={`\\hat\\delta_t`} />, removing the{" "}
                       {timeTrend} pt/yr trend.
-                      Remaining bias: <Tex math={`${fmt(twfeBeta, 2)} - 5.0 = ${fmt(twfeBeta - TRUE_EFFECT, 2)}`} /> pts (noise only).
+                      Remaining deviation: <Tex math={`${fmt(step4TWFE, 2)} - 5.0 = ${fmt(step4TWFE - TRUE_EFFECT, 2)}`} /> pts (sampling noise only).
                     </p>
                   </InfoBox>
 
@@ -1445,66 +1523,8 @@ export default function PanelDataTutorial() {
                     Fixed effects rest on <strong>strict exogeneity</strong>: the error{" "}
                     <Tex math="\varepsilon_{it}" /> must be uncorrelated with all past, present,
                     and future treatment values within a unit. Several real-world patterns break
-                    this.
+                    this assumption.
                   </p>
-
-                  <div className="space-y-3">
-                    <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
-                      <p className="font-medium text-slate-800">1. Time-varying confounders</p>
-                      <p className="text-sm mt-1 text-slate-700">
-                        FE removes only <em>time-invariant</em> unobservables. Suppose Bella
-                        Cucina starts a kitchen renovation at Year 3 — the same year it receives
-                        the grant. The renovation is a time-varying confounder the
-                        within-transformation cannot eliminate, so <Tex math="\hat\beta" /> still
-                        picks up the renovation effect.
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
-                      <p className="font-medium text-slate-800">2. Reverse causality and anticipation</p>
-                      <p className="text-sm mt-1 text-slate-700">
-                        The city might award grants to restaurants with <em>already improving</em>{" "}
-                        scores — making high scores a cause of treatment. Alternatively,
-                        restaurants that expect a grant might pre-emptively clean up before it
-                        arrives, violating strict exogeneity of past treatment. Both patterns
-                        corrupt the FE estimate.
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
-                      <p className="font-medium text-slate-800">3. Staggered adoption and TWFE bias</p>
-                      <p className="text-sm mt-1 text-slate-700">
-                        In our 50-restaurant simulation, restaurants adopt the grant at different
-                        years. Simple TWFE implicitly uses <em>already-treated</em> restaurants as
-                        controls for <em>later-treated</em> ones. If grant effects are
-                        heterogeneous or evolve over time, this produces negatively-weighted
-                        averages — the estimate can even be negative when all true effects are
-                        positive. Modern DiD methods (Callaway &amp; Sant'Anna, Sun &amp; Abraham)
-                        address this by constructing cleaner comparison groups.
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                      <p className="font-medium text-slate-800">4. Loss of time-invariant regressors</p>
-                      <p className="text-sm mt-1 text-slate-700">
-                        FE absorbs all unit-level variation, so you cannot estimate a coefficient
-                        on any variable that never changes for a restaurant — for example, its
-                        founding year or neighbourhood. If those coefficients matter, consider a
-                        random-effects model at the cost of stronger assumptions.
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                      <p className="font-medium text-slate-800">5. Incidental parameters in non-linear models</p>
-                      <p className="text-sm mt-1 text-slate-700">
-                        In logit or probit models, estimating a separate intercept for each unit
-                        causes the fixed-effect parameters to be inconsistent when{" "}
-                        <Tex math="T" /> is small, even as <Tex math="N \to \infty" />. This
-                        "incidental parameters problem" does not affect the linear model — another
-                        reason to prefer linear specifications when outcome coding allows it.
-                      </p>
-                    </div>
-                  </div>
 
                   <InfoBox variant="dark" title="Strict exogeneity — the core requirement">
                     <Tex
@@ -1512,11 +1532,107 @@ export default function PanelDataTutorial() {
                       display
                     />
                     This says the error in <em>any</em> period must be uncorrelated with
-                    treatment in <em>every</em> period for that unit. It is a much stronger
-                    condition than the contemporaneous exogeneity required for pooled OLS.
-                    Whenever you use FE, ask whether anticipation, dynamic selection, or
-                    time-varying confounders could plausibly violate it.
+                    treatment in <em>every</em> period for that unit. It is much stronger
+                    than the contemporaneous exogeneity required for pooled OLS.
                   </InfoBox>
+
+                  {/* --- Failure mode 1: time-varying confounders (with chart) --- */}
+                  <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 space-y-3">
+                    <p className="font-medium text-slate-800">1. Time-varying confounders</p>
+                    <p className="text-sm text-slate-700">
+                      FE removes only <em>time-invariant</em> unobservables. Suppose Bella
+                      Cucina starts a kitchen renovation at Year 3 — the same year it receives
+                      the grant. The renovation independently adds {RENOVATION_EFFECT} pts to
+                      scores. The within transformation cannot tell the two apart.
+                    </p>
+                    <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
+                      <div className="space-y-3">
+                        <div className="bg-white rounded p-2 text-xs font-mono text-slate-600">
+                          Yr 2→3 score change with renovation:
+                          <br />
+                          grant ({TRUE_EFFECT} pts) + renovation ({RENOVATION_EFFECT} pts) + noise
+                          <br />
+                          FE attributes all {TRUE_EFFECT + RENOVATION_EFFECT} pts to the grant
+                          <br />
+                          → <Tex math={`\\hat\\beta = ${TRUE_EFFECT + RENOVATION_EFFECT}`} /> instead of{" "}
+                          <Tex math={`\\beta = ${TRUE_EFFECT}`} />
+                        </div>
+                        <p className="text-sm text-slate-700">
+                          The amber shaded region in the chart shows the {RENOVATION_EFFECT}-pt gap
+                          that FE wrongly attributes to the grant. This is the Achilles' heel
+                          of fixed effects — any time-varying change coinciding with treatment
+                          contaminates the estimate.
+                        </p>
+                      </div>
+                      <ConfounderWhatIfChart bellaScores={bellaData.scores} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
+                      <p className="font-medium text-slate-800">2. Reverse causality and anticipation</p>
+                      <p className="text-sm mt-1 text-slate-700">
+                        The city might award grants to restaurants with <em>already improving</em>{" "}
+                        scores — making high scores a cause of treatment. Alternatively,
+                        restaurants expecting a grant might pre-emptively clean up. Both violate
+                        strict exogeneity: future treatment correlates with current errors.
+                      </p>
+                      <div className="mt-2 bg-white rounded p-2 text-xs font-mono text-slate-600">
+                        If Corner Diner cleans up in Yr 4 anticipating a Yr 5 grant:
+                        <br />
+                        <Tex math="\varepsilon_{i4}" /> ↑ while <Tex math="D_{i5} = 1" /> → <Tex math="\text{Corr}(\varepsilon_{i4}, D_{i5}) > 0" /> → violation
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-amber-100 bg-amber-50 p-4">
+                      <p className="font-medium text-slate-800">3. Staggered adoption and TWFE bias</p>
+                      <p className="text-sm mt-1 text-slate-700">
+                        In our 50-restaurant panel, restaurants adopt the grant at different
+                        years. Simple TWFE implicitly uses <em>already-treated</em> restaurants as
+                        controls for <em>later-treated</em> ones. If the grant effect grows over
+                        time (e.g., 3 pts in year 1, 7 pts by year 3), this comparison is
+                        contaminated.
+                      </p>
+                      <div className="mt-2 bg-white rounded p-2 text-xs font-mono text-slate-600">
+                        Restaurant A treated Yr 2, Restaurant B treated Yr 5.
+                        <br />
+                        At Yr 5, TWFE compares B's change to A's — but A's "control" score
+                        <br />
+                        already contains 3 years of treatment effect → negative weighting
+                      </div>
+                      <p className="text-sm mt-2 text-slate-700">
+                        Modern DiD methods (Callaway &amp; Sant'Anna, Sun &amp; Abraham,
+                        Borusyak et al.) address this by constructing cleaner comparison groups
+                        that never use already-treated units as controls.
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                      <p className="font-medium text-slate-800">4. Loss of time-invariant regressors</p>
+                      <p className="text-sm mt-1 text-slate-700">
+                        FE absorbs <em>all</em> unit-level variation, so you cannot estimate
+                        a coefficient on any variable that never changes — for example, each
+                        restaurant's neighbourhood or founding year. In our data, culture{" "}
+                        <Tex math="u_i" /> is absorbed into <Tex math="\hat\alpha_i" />:
+                        Bella Cucina's estimated intercept is{" "}
+                        <Tex math={`\\hat\\alpha_{\\text{Bella}} \\approx ${fmt(bellaData.scoreMean, 1)}`} />{" "}
+                        and Corner Diner's is{" "}
+                        <Tex math={`\\hat\\alpha_{\\text{Corner}} \\approx ${fmt(cornerData.scoreMean, 1)}`} />.
+                        The gap reflects culture, but we cannot decompose it further.
+                      </p>
+                    </div>
+
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                      <p className="font-medium text-slate-800">5. Incidental parameters in non-linear models</p>
+                      <p className="text-sm mt-1 text-slate-700">
+                        In logit or probit models, estimating a separate intercept per unit
+                        causes inconsistency when <Tex math="T" /> is small, even as{" "}
+                        <Tex math="N \to \infty" />. Our panel has <Tex math="T = 6" />,
+                        which is typical — this "incidental parameters problem" is another
+                        reason to prefer linear specifications when the outcome permits it.
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </StepContent>
@@ -1542,15 +1658,15 @@ export default function PanelDataTutorial() {
                   "All sources of omitted variable bias",
                 ]}
                 correctIndex={1}
-                explanation="Demeaning by unit mean removes any characteristic that is constant over time for that unit — α_i, which includes cleanliness culture. Time-varying confounders like a renovation survive the transformation."
+                explanation="Demeaning by unit mean removes any characteristic that is constant over time for that unit — including cleanliness culture. Time-varying confounders like a renovation survive the transformation."
               />
               <QuizCard
-                question="In our 50-restaurant panel, what happens to the entity FE estimate as you increase the time trend magnitude?"
+                question="Entity FE works well in Step 3 (no time trend). What goes wrong when a common time trend exists?"
                 options={[
-                  "It gets closer to the true effect of 5 pts",
-                  "It becomes more biased, because trend confounds the grant timing",
-                  "It stays at exactly 5 pts regardless",
-                  "It becomes negative",
+                  "Entity FE cannot handle more than 2 periods",
+                  "The trend confounds the grant timing — later adopters look like they improved due to the trend",
+                  "Entity FE removes the trend automatically",
+                  "The bias disappears if you cluster standard errors",
                 ]}
                 correctIndex={1}
                 explanation="With staggered adoption, later-treated restaurants are treated in years when the common trend has already raised scores. Entity FE cannot distinguish the grant from this time trend. Adding time fixed effects (TWFE) solves the problem."
