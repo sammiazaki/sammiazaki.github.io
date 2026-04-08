@@ -107,6 +107,20 @@ const tutorials = [
     ),
   },
   {
+    slug: "regression-discontinuity",
+    title: "Regression Discontinuity Design",
+    description:
+      "Use artificial thresholds and jumps in running variables to estimate causal effects — from sharp RDD to fuzzy designs and the sheepskin effect.",
+    date: "2026-04-09",
+    tags: ["causal-inference", "rdd", "econometrics", "instrumental-variables"],
+    source: {
+      title: "Regression Discontinuity Design — Causal Inference for the Brave and True",
+      author: "Matheus Facure",
+      url: "https://matheusfacure.github.io/python-causality-handbook/16-Regression-Discontinuity-Design.html",
+    },
+    component: lazy(() => import("./regression-discontinuity/RegressionDiscontinuityTutorial.jsx")),
+  },
+  {
     slug: "panel-data",
     title: "Panel Data & Fixed Effects",
     description:
