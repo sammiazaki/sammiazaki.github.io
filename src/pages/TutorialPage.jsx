@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getTutorial } from "@/tutorials/registry";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 export default function TutorialPage() {
   const { slug } = useParams();
@@ -22,12 +22,6 @@ export default function TutorialPage() {
 
   return (
     <div>
-      <div className="mx-auto max-w-6xl px-6 pt-6">
-        <Link to="/noodlelab" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Noodlelab
-        </Link>
-      </div>
       <Suspense
         fallback={
           <div className="mx-auto max-w-6xl px-6 py-20 text-center text-slate-400">Loading...</div>

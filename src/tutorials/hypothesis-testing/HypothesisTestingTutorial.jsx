@@ -7,10 +7,8 @@ import {
   Layers,
   Grid3X3,
   Activity,
-  Link,
   AlertTriangle,
   Zap,
-  HelpCircle,
   Target,
   TrendingUp,
 } from "lucide-react";
@@ -21,6 +19,7 @@ import {
   StatCard,
   InfoBox,
   LabeledSlider,
+  CodeBlock,
   Tex,
 } from "@/components/tutorial";
 
@@ -71,22 +70,6 @@ function variance(arr, ddof = 1) {
 
 function std(arr, ddof = 1) {
   return Math.sqrt(variance(arr, ddof));
-}
-
-function ranks(arr) {
-  const sorted = arr
-    .map((v, i) => ({ v, i }))
-    .sort((a, b) => a.v - b.v);
-  const r = Array(arr.length);
-  let i = 0;
-  while (i < sorted.length) {
-    let j = i;
-    while (j < sorted.length && sorted[j].v === sorted[i].v) j++;
-    const avgRank = (i + 1 + j) / 2;
-    for (let k = i; k < j; k++) r[sorted[k].i] = avgRank;
-    i = j;
-  }
-  return r;
 }
 
 /* ------------------------------------------------------------------ */
@@ -227,16 +210,9 @@ const SYY = CORR_TASTE.reduce(
 );
 const PEARSON_R = SXY / Math.sqrt(SXX * SYY);
 
-/* ------------------------------------------------------------------ */
-/*  Python code display component                                      */
-/* ------------------------------------------------------------------ */
-
+/* PythonCode — thin alias for CodeBlock with language="python" */
 function PythonCode({ code }) {
-  return (
-    <pre className="bg-slate-900 text-emerald-400 text-xs p-3 rounded-lg overflow-x-auto font-mono leading-relaxed">
-      <code>{code}</code>
-    </pre>
-  );
+  return <CodeBlock code={code} language="python" />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -279,8 +255,6 @@ function NullDistChart({ alpha, zObs = 1.96 }) {
   const sx = (x) => PAD.left + ((x - xMin) / (xMax - xMin)) * pw;
   const sy = (y) => PAD.top + ph - (y / 0.42) * ph;
 
-  const zCrit = -Math.sqrt(2) * 0.6745; // approximate inverse normal
-  // Better approximation for z critical value
   const zAlpha = (() => {
     // Newton's method on normalCDF for two-tailed
     let z = 1.96;
@@ -1616,8 +1590,22 @@ export default function HypothesisTestingTutorial() {
   return (
     <TutorialShell
       title="Statistical Hypothesis Testing"
+      description="A comprehensive guide to every major test family — from t-tests to ANOVA, chi-square to permutation tests — with hand calculations, Python code, and interactive visualizations."
+      intro={
+        <>
+          <p>
+            We follow <strong>Sunrise Roasters</strong>, a specialty coffee company whose
+            data naturally spans every test family: continuous taste scores, paired roast
+            comparisons, categorical repurchase data, and multi-origin quality benchmarks.
+          </p>
+          <p>
+            For each test you&apos;ll see the mathematical formulation, a step-by-step hand
+            calculation with concrete numbers, the Python <code>scipy.stats</code> one-liner,
+            and an interactive chart.
+          </p>
+        </>
+      }
       lessons={lessons}
-      icon={<FlaskConical className="w-5 h-5" />}
     >
       {(step) => (
         <>
@@ -1723,11 +1711,13 @@ export default function HypothesisTestingTutorial() {
                         </tr>
                         <tr className="border-b border-slate-100">
                           <td className="p-2 font-medium">Categorical association</td>
-                          <td className="p-2" colSpan={2}>Chi-square, Fisher&apos;s exact, McNemar&apos;s</td>
+                          <td className="p-2">Chi-square test</td>
+                          <td className="p-2">Fisher&apos;s exact, McNemar&apos;s</td>
                         </tr>
                         <tr className="border-b border-slate-100">
                           <td className="p-2 font-medium">Distribution shape</td>
-                          <td className="p-2" colSpan={2}>Shapiro-Wilk, KS test, Chi-square GOF</td>
+                          <td className="p-2">Shapiro-Wilk</td>
+                          <td className="p-2">KS test, Chi-square GOF</td>
                         </tr>
                         <tr>
                           <td className="p-2 font-medium">Association strength</td>
@@ -1850,8 +1840,8 @@ export default function HypothesisTestingTutorial() {
                         min={0.01}
                         max={0.2}
                         step={0.01}
-                        value={alpha}
-                        onChange={setAlpha}
+                        value={[alpha]}
+                        onValueChange={([v]) => setAlpha(v)}
                       />
                       <div className="grid gap-3 md:grid-cols-2">
                         <StatCard label="α" value={fmt(alpha, 2)} />
@@ -2146,8 +2136,8 @@ print(f"U = {stat:.1f}, p = {p_value:.6f}")`}
                         min={100}
                         max={5000}
                         step={100}
-                        value={nPerms}
-                        onChange={setNPerms}
+                        value={[nPerms]}
+                        onValueChange={([v]) => setNPerms(v)}
                       />
                       <PythonCode
                         code={`from scipy.stats import permutation_test
@@ -2953,16 +2943,16 @@ print(f"τ = {tau:.4f}, p = {p_value:.4f}")`}
                         min={5}
                         max={50}
                         step={1}
-                        value={nTests}
-                        onChange={setNTests}
+                        value={[nTests]}
+                        onValueChange={([v]) => setNTests(v)}
                       />
                       <LabeledSlider
                         label="Proportion of true nulls"
                         min={0.5}
                         max={1.0}
                         step={0.05}
-                        value={propNull}
-                        onChange={setPropNull}
+                        value={[propNull]}
+                        onValueChange={([v]) => setPropNull(v)}
                       />
                       <div className="space-y-2 text-sm">
                         <p>
@@ -3083,24 +3073,24 @@ print(f"BH rejects: {sum(reject_bh)}")`}
                         min={0.2}
                         max={1.5}
                         step={0.05}
-                        value={effectSize}
-                        onChange={setEffectSize}
+                        value={[effectSize]}
+                        onValueChange={([v]) => setEffectSize(v)}
                       />
                       <LabeledSlider
                         label="Significance level (α)"
                         min={0.01}
                         max={0.10}
                         step={0.01}
-                        value={powerAlpha}
-                        onChange={setPowerAlpha}
+                        value={[powerAlpha]}
+                        onValueChange={([v]) => setPowerAlpha(v)}
                       />
                       <LabeledSlider
                         label="Sample size per group (n)"
                         min={5}
                         max={100}
                         step={1}
-                        value={powerN}
-                        onChange={setPowerN}
+                        value={[powerN]}
+                        onValueChange={([v]) => setPowerN(v)}
                       />
                       <div className="grid gap-3 md:grid-cols-2">
                         <StatCard
@@ -3195,7 +3185,7 @@ print(f"Power with n=20: {power:.3f}")`}
                   "One-way ANOVA",
                   "Chi-square test",
                 ]}
-                answer={1}
+                correctIndex={1}
                 explanation="Same customers measured twice = paired data. The paired t-test uses within-subject differences, removing individual-level noise."
               />
               <QuizCard
@@ -3206,7 +3196,7 @@ print(f"Power with n=20: {power:.3f}")`}
                   "Kruskal-Wallis",
                   "Fisher's exact test",
                 ]}
-                answer={2}
+                correctIndex={2}
                 explanation="Kruskal-Wallis is the nonparametric alternative to one-way ANOVA. With small, skewed samples, the normality assumption for ANOVA is questionable."
               />
               <QuizCard
@@ -3217,13 +3207,13 @@ print(f"Power with n=20: {power:.3f}")`}
                   "2×2 tables can't use chi-square",
                   "The sample size is too large",
                 ]}
-                answer={1}
+                correctIndex={1}
                 explanation="Chi-square relies on a large-sample approximation that breaks down when expected counts are below 5. Use Fisher's exact test instead."
               />
               <QuizCard
                 question="You test 100 hypotheses at α = 0.05 and find 8 with p < 0.05. If all nulls are true, about how many are false positives?"
                 options={["0", "3", "5", "8"]}
-                answer={2}
+                correctIndex={2}
                 explanation="If all 100 nulls are true, we expect 5% × 100 = 5 false positives by chance. Getting 8 suggests some may be real, but we can't be sure without multiple testing correction."
               />
               <QuizCard
@@ -3234,7 +3224,7 @@ print(f"Power with n=20: {power:.3f}")`}
                   "Yes — but only if p > 0.05",
                   "No — because the sample is too small",
                 ]}
-                answer={1}
+                correctIndex={1}
                 explanation="Pearson measures only linear association. A perfect inverted-U relationship (like our coffee example) can produce r ≈ 0. Always plot your data!"
               />
               <QuizCard
@@ -3245,7 +3235,7 @@ print(f"Power with n=20: {power:.3f}")`}
                   "Power increases substantially",
                   "Power increases only if α also changes",
                 ]}
-                answer={2}
+                correctIndex={2}
                 explanation="Power increases with sample size (all else equal). Quadrupling n from 20 to 80 roughly doubles the test statistic, dramatically increasing the chance of detecting a real effect."
               />
               <QuizCard
@@ -3256,7 +3246,7 @@ print(f"Power with n=20: {power:.3f}")`}
                   "97% chance the effect is real",
                   "The effect size is 0.03",
                 ]}
-                answer={1}
+                correctIndex={1}
                 explanation="The p-value is P(data this extreme | H₀ true). It is NOT the probability that H₀ is true — that's a common and dangerous misinterpretation."
               />
               <QuizCard
@@ -3267,7 +3257,7 @@ print(f"Power with n=20: {power:.3f}")`}
                   "Whichever you planned before seeing the data",
                   "Both, and take the average p-value",
                 ]}
-                answer={2}
+                correctIndex={2}
                 explanation="Choosing the test after seeing results is a form of p-hacking. Pre-register your analysis plan. If you planned the t-test, report the t-test — even if the other test gives a smaller p-value."
               />
             </StepContent>
