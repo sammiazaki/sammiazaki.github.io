@@ -535,21 +535,28 @@ export default function OLSByHandTutorial() {
   const intro = (
     <>
       <p>
-        OLS (Ordinary Least Squares) is the workhorse of regression analysis.
-        Most people use a library call, but understanding the algebra behind it
-        reveals <em>why</em> it works and <em>when</em> it fails.
+        Every regression package gives you coefficients, standard errors, and an
+        R&sup2; in one function call. But what is the machine actually doing?
+        Ordinary Least Squares finds the line (or hyperplane) that minimizes the
+        sum of squared residuals — and the solution can be derived with nothing
+        more than calculus, linear algebra, and a 6-row dataset.
       </p>
       <p>
-        We will derive every formula by hand, compute each matrix step by step,
-        and build the geometric intuition for why OLS is a projection.
+        This tutorial walks through the full derivation: take partial
+        derivatives, solve the normal equations, assemble the matrices, invert
+        them by hand, and arrive at{" "}
+        <Tex math="\hat{\boldsymbol{\beta}} = (\mathbf{X}^\top\mathbf{X})^{-1}\mathbf{X}^\top\mathbf{y}" />.
+        Along the way you will see <em>why</em> OLS is a projection,{" "}
+        <em>what</em> the Gauss-Markov theorem guarantees, and <em>how</em>{" "}
+        noise and sample size affect the estimates in an interactive playground.
       </p>
     </>
   );
 
   return (
     <TutorialShell
-      title="OLS by Hand"
-      description="Full derivation, matrix algebra, and geometric intuition for Ordinary Least Squares"
+      title="Anatomy of OLS"
+      description="Derive the OLS estimator from scratch — calculus, matrix algebra, projection geometry, and hand calculations on a real dataset."
       intro={intro}
       lessons={[
         "The Problem",
@@ -642,12 +649,12 @@ export default function OLSByHandTutorial() {
                     <StatCard
                       label="Mean temp"
                       value={`${fmt(xbar_temp, 1)} °F`}
-                      formula="\\bar{x}_1 = \\frac{1}{n}\\sum x_{1i}"
+                      formula="\\bar{x}_{1} = \\frac{1}{n}\\sum_{i} x_{1i}"
                     />
                     <StatCard
                       label="Mean cups"
                       value={fmt(ybar, 1)}
-                      formula="\\bar{y} = \\frac{1}{n}\\sum y_i"
+                      formula="\\bar{y} = \\frac{1}{n}\\sum_{i} y_{i}"
                     />
                   </div>
                 </CardContent>
@@ -875,12 +882,12 @@ export default function OLSByHandTutorial() {
                           <StatCard
                             label="Sxy"
                             value={fmt(Sxy, 1)}
-                            formula="\\sum(x_i-\\bar{x})(y_i-\\bar{y})"
+                            formula="\\sum_{i}(x_{i}-\\bar{x})(y_{i}-\\bar{y})"
                           />
                           <StatCard
                             label="Sxx"
                             value={fmt(Sxx, 1)}
-                            formula="\\sum(x_i-\\bar{x})^2"
+                            formula="\\sum_{i}(x_{i}-\\bar{x})^{2}"
                           />
                           <StatCard
                             label="Slope"
@@ -1486,12 +1493,12 @@ export default function OLSByHandTutorial() {
                     <StatCard
                       label="SST"
                       value={fmt(OLS.SST, 2)}
-                      formula="\\sum(y_i - \\bar{y})^2"
+                      formula="\\sum_{i}(y_{i} - \\bar{y})^{2}"
                     />
                     <StatCard
                       label="SSR"
                       value={fmt(OLS.SSR, 2)}
-                      formula="\\sum e_i^2"
+                      formula="\\sum_{i} e_{i}^{2}"
                     />
                     <StatCard
                       label="R\u00B2"

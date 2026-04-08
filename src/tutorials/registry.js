@@ -79,9 +79,9 @@ const tutorials = [
   },
   {
     slug: "ols-by-hand",
-    title: "OLS by Hand",
+    title: "Anatomy of OLS",
     description:
-      "Full derivation of Ordinary Least Squares — calculus, matrix algebra, geometric intuition, and hand calculations with a concrete dataset.",
+      "Derive the OLS estimator from scratch — calculus, matrix algebra, projection geometry, and hand calculations on a real dataset.",
     date: "2026-04-08",
     tags: ["regression", "OLS", "linear algebra", "econometrics"],
     component: lazy(() => import("./ols-by-hand/OLSByHandTutorial.jsx")),
