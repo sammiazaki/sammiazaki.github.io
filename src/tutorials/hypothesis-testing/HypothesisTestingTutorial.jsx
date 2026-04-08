@@ -1749,6 +1749,15 @@ export default function HypothesisTestingTutorial() {
                 Every hypothesis test follows the same five-step recipe.
               </p>
 
+              <InfoBox>
+                <strong>The court trial analogy.</strong> Think of hypothesis testing like a criminal trial.
+                The defendant (H₀) is <em>presumed innocent</em>. The prosecutor (your data) must
+                present enough evidence to overcome that presumption. A verdict of &ldquo;not guilty&rdquo;
+                doesn&apos;t mean the defendant is innocent — it means the evidence wasn&apos;t strong enough
+                to convict. Similarly, &ldquo;fail to reject H₀&rdquo; doesn&apos;t mean H₀ is true — it means
+                the data wasn&apos;t surprising enough to overturn it.
+              </InfoBox>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -1759,13 +1768,25 @@ export default function HypothesisTestingTutorial() {
                   <div className="space-y-3">
                     <p>
                       <strong>1. Null hypothesis (H₀):</strong> The &ldquo;nothing interesting&rdquo;
-                      claim. Example: &ldquo;Sunrise Roasters&apos; mean roast temp equals 200°C.&rdquo;
+                      claim — the default assumption we try to disprove. Example: &ldquo;Sunrise
+                      Roasters&apos; mean roast temp equals 200°C.&rdquo;
                     </p>
                     <Tex math="H_0: \mu = 200" display />
+                    <p className="text-sm text-slate-500 italic">
+                      Intuition: H₀ is always the &ldquo;boring&rdquo; explanation — nothing changed,
+                      no difference exists, the treatment did nothing. We set it up as the
+                      claim we hope to disprove.
+                    </p>
                     <p>
-                      <strong>2. Alternative hypothesis (H₁):</strong> What we suspect is true.
+                      <strong>2. Alternative hypothesis (H₁):</strong> What we suspect is true —
+                      the interesting claim we&apos;re looking for evidence of.
                     </p>
                     <Tex math="H_1: \mu \neq 200" display />
+                    <p className="text-sm text-slate-500 italic">
+                      Intuition: H₁ is what you&apos;d tell your boss if the test &ldquo;works.&rdquo;
+                      Two-sided (≠) when you don&apos;t know the direction of the effect;
+                      one-sided (&gt; or &lt;) when you do.
+                    </p>
                     <p>
                       <strong>3. Test statistic:</strong> A single number that measures how far
                       the data deviates from H₀. For a mean:
@@ -1774,10 +1795,22 @@ export default function HypothesisTestingTutorial() {
                       math="t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}"
                       display
                     />
+                    <p className="text-sm text-slate-500 italic">
+                      Intuition: The test statistic answers: &ldquo;How many standard errors is my
+                      sample from what H₀ predicts?&rdquo; A t of 1 means your data is 1 SE away
+                      from the null — not very surprising. A t of 4 means 4 SEs away — that&apos;s
+                      very unlikely under H₀.
+                    </p>
                     <p>
                       <strong>4. Null distribution:</strong> The probability distribution of the
                       test statistic <em>if H₀ were true</em>. Under the null, t follows a
                       t-distribution (or approximately standard normal for large n).
+                    </p>
+                    <p className="text-sm text-slate-500 italic">
+                      Intuition: Imagine running your experiment 10,000 times in a universe
+                      where H₀ is true. The null distribution is the histogram of test
+                      statistics you&apos;d get. It tells you what &ldquo;normal random variation&rdquo;
+                      looks like.
                     </p>
                     <p>
                       <strong>5. p-value:</strong> The probability of observing a test statistic
@@ -1787,6 +1820,12 @@ export default function HypothesisTestingTutorial() {
                       math="p\text{-value} = P(|T| \geq |t_{\text{obs}}| \mid H_0)"
                       display
                     />
+                    <p className="text-sm text-slate-500 italic">
+                      Intuition: The p-value measures <strong>surprise</strong>. A small p-value
+                      means &ldquo;this data would be very unlikely if H₀ were true,&rdquo; so we doubt
+                      H₀. A large p-value means &ldquo;this data is perfectly consistent with H₀,&rdquo;
+                      so we have no reason to reject it.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -1801,7 +1840,9 @@ export default function HypothesisTestingTutorial() {
                   <p>
                     We reject H₀ when <Tex math="p < \alpha" />, where{" "}
                     <Tex math="\alpha" /> is the significance level — the false positive rate
-                    we&apos;re willing to tolerate.
+                    we&apos;re willing to tolerate. Think of α as the &ldquo;conviction threshold&rdquo;
+                    — how extreme must the evidence be before we&apos;re willing to reject the
+                    default assumption?
                   </p>
                   <div className="grid gap-3 md:grid-cols-2">
                     <StatCard
@@ -1936,20 +1977,47 @@ export default function HypothesisTestingTutorial() {
                     {" "}(roast temp is on target) &nbsp;
                     <strong>H₁:</strong> <Tex math="\mu \neq 200" />
                   </p>
+
+                  <InfoBox>
+                    <strong>The thinking process.</strong> We observed x̄ = {fmt(TEMP_MEAN, 2)}°C.
+                    That&apos;s {fmt(Math.abs(TEMP_MEAN - 200), 2)}°C away from 200. But is that gap
+                    meaningful? It depends on how <em>noisy</em> our measurements are. If individual
+                    batches vary by ±10°C, a {fmt(Math.abs(TEMP_MEAN - 200), 2)}°C shift in the
+                    mean is nothing. If they vary by ±0.5°C, the same shift would be alarming.
+                    The t-statistic formalizes this: it divides the gap by the <strong>standard
+                    error</strong> (how much the mean itself fluctuates across samples).
+                  </InfoBox>
+
                   <p>The test statistic:</p>
                   <Tex
                     math="t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}}"
                     display
                   />
-                  <p><strong>Hand calculation:</strong></p>
+                  <p className="text-sm text-slate-500 italic">
+                    Read this as: &ldquo;How many standard errors is our sample mean from the
+                    target?&rdquo; The denominator <Tex math="s / \sqrt{n}" /> is the standard
+                    error — it shrinks as n grows, because more data makes our estimate of the
+                    mean more precise.
+                  </p>
+                  <p><strong>Hand calculation — step by step:</strong></p>
+                  <p className="text-sm">
+                    <strong>Step 1.</strong> Compute the gap: x̄ − μ₀ = {fmt(TEMP_MEAN, 2)} − 200 = {fmt(TEMP_MEAN - 200, 3)}°C
+                  </p>
+                  <p className="text-sm">
+                    <strong>Step 2.</strong> Compute the standard error: SE = s / √n = {fmt(TEMP_STD, 2)} / √8 = {fmt(TEMP_STD / Math.sqrt(8), 3)}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Step 3.</strong> Standardize: t = gap / SE
+                  </p>
                   <Tex
-                    math={`t = \\frac{${fmt(TEMP_MEAN, 2)} - 200}{${fmt(TEMP_STD, 2)} / \\sqrt{8}} = \\frac{${fmt(TEMP_MEAN - 200, 3)}}{${fmt(TEMP_STD / Math.sqrt(8), 3)}} = ${fmt(TEMP_T, 3)}`}
+                    math={`t = \\frac{${fmt(TEMP_MEAN - 200, 3)}}{${fmt(TEMP_STD / Math.sqrt(8), 3)}} = ${fmt(TEMP_T, 3)}`}
                     display
                   />
                   <p className="text-sm">
-                    With df = n − 1 = 7, this t-value corresponds to a large p-value.
-                    The roast temperature is consistent with the 200°C target —
-                    we <strong>fail to reject H₀</strong>.
+                    The mean is only {fmt(Math.abs(TEMP_T), 2)} standard errors from the target —
+                    well within normal random variation. With df = n − 1 = 7, this t-value
+                    corresponds to a large p-value. The roast temperature is consistent
+                    with the 200°C target — we <strong>fail to reject H₀</strong>.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import ttest_1samp
@@ -1968,11 +2036,18 @@ print(f"t = {t_stat:.3f}, p = {p_value:.4f}")`}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
+                  <p className="text-sm text-slate-500 italic">
+                    What if we don&apos;t trust the normality assumption? The nonparametric
+                    alternatives throw away the exact values and work with simpler
+                    information — signs or ranks — making fewer assumptions about
+                    the data&apos;s shape.
+                  </p>
                   <p>
-                    <strong>Sign test:</strong> Simply count how many measurements are above
-                    vs below the target. Out of 8 batches, {TEMP_ABOVE} are above 200°C and{" "}
-                    {8 - TEMP_ABOVE} are below. Under H₀, each has 50% probability of
-                    being above.
+                    <strong>Sign test:</strong> The simplest possible test — just count how
+                    many measurements are above vs below the target. No formulas for means
+                    or standard deviations needed. Out of 8 batches, {TEMP_ABOVE} are above
+                    200°C and {8 - TEMP_ABOVE} are below. Under H₀, each has 50% probability
+                    of being above — like flipping a fair coin.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import binomtest
@@ -1982,9 +2057,12 @@ result = binomtest(above, n=8, p=0.5, alternative='two-sided')
 print(f"p = {result.pvalue:.4f}")`}
                   />
                   <p>
-                    <strong>Wilcoxon signed-rank test:</strong> Uses ranks of |xᵢ − 200|
-                    rather than raw values. More powerful than the sign test when
-                    differences are symmetric, but doesn&apos;t require normality.
+                    <strong>Wilcoxon signed-rank test:</strong> A middle ground — it uses the
+                    <em> ranks</em> of |xᵢ − 200| rather than raw values, plus the sign of
+                    each difference. Intuition: it asks &ldquo;are the <em>bigger</em> deviations
+                    mostly on one side of the target?&rdquo; More powerful than the sign test
+                    (which only looks at direction, not magnitude), but still doesn&apos;t
+                    require normality.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import wilcoxon
@@ -2065,12 +2143,27 @@ print(f"W = {stat:.1f}, p = {p_value:.4f}")`}
                     <strong>H₀:</strong> <Tex math="\mu_E = \mu_C" /> &nbsp;
                     <strong>H₁:</strong> <Tex math="\mu_E \neq \mu_C" />
                   </p>
-                  <p>Welch&apos;s t-test doesn&apos;t assume equal variances:</p>
+                  <InfoBox>
+                    <strong>Why Welch&apos;s, not Student&apos;s?</strong> The classic Student&apos;s
+                    t-test assumes both groups have equal variance. In practice this is
+                    rarely true — and when it&apos;s wrong, the test can be either too liberal
+                    or too conservative. Welch&apos;s modification estimates each group&apos;s
+                    variance separately, making it safe to use as the default. There&apos;s
+                    almost no cost when variances happen to be equal.
+                  </InfoBox>
+                  <p>The same logic as the one-sample test, but now we standardize the
+                    <em> gap between two means</em>:</p>
                   <Tex
                     math="t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}}"
                     display
                   />
-                  <p><strong>Hand calculation:</strong></p>
+                  <p className="text-sm text-slate-500 italic">
+                    Intuition: The numerator is &ldquo;how far apart are the two groups?&rdquo;
+                    The denominator is &ldquo;how much would they differ by chance?&rdquo; A large
+                    t means the observed gap is much bigger than what random noise alone
+                    would produce.
+                  </p>
+                  <p><strong>Hand calculation — step by step:</strong></p>
                   <Tex
                     math={`\\text{SE} = \\sqrt{\\frac{${fmt(ETH_STD, 2)}^2}{10} + \\frac{${fmt(COL_STD, 2)}^2}{10}} = \\sqrt{${fmt(ETH_STD ** 2 / 10, 3)} + ${fmt(COL_STD ** 2 / 10, 3)}} = ${fmt(WELCH_SE, 3)}`}
                     display
@@ -2103,9 +2196,15 @@ print(f"t = {t_stat:.3f}, p = {p_value:.6f}")`}
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
-                    The nonparametric alternative. Instead of comparing means, it tests whether
-                    one group&apos;s values tend to be larger. It works by ranking all 20 scores
-                    together and comparing the sum of ranks between groups.
+                    The nonparametric alternative. Instead of comparing means, it asks:
+                    &ldquo;If I pick a random Ethiopian score and a random Colombian score,
+                    how often does the Ethiopian one win?&rdquo;
+                  </p>
+                  <p className="text-sm text-slate-500 italic">
+                    Intuition: Pool all 20 scores, rank them 1–20, then check whether
+                    one group hogs the high ranks. If Ethiopian scores consistently
+                    outrank Colombian, the rank-sum will be extreme. This works even
+                    for skewed data or outliers, because ranks are immune to extreme values.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import mannwhitneyu
@@ -2126,10 +2225,16 @@ print(f"U = {stat:.1f}, p = {p_value:.6f}")`}
                   <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-3">
                       <p className="text-sm">
-                        The most intuitive approach: if origin doesn&apos;t matter, randomly
-                        shuffling the &ldquo;Ethiopian&rdquo; and &ldquo;Colombian&rdquo; labels should produce
-                        similar group differences. We shuffle {nPerms} times and check how
-                        often the permuted difference is as extreme as the observed one.
+                        The most intuitive test of all — it builds the null distribution
+                        directly by simulation rather than relying on mathematical formulas.
+                      </p>
+                      <p className="text-sm text-slate-500 italic">
+                        The logic: if origin truly doesn&apos;t matter, the label &ldquo;Ethiopian&rdquo;
+                        or &ldquo;Colombian&rdquo; is meaningless — you could shuffle them randomly and
+                        the group means would look similar. So we shuffle labels {nPerms}{" "}
+                        times, compute the mean difference each time, and ask: &ldquo;How often
+                        does a random shuffle produce a gap as large as what we actually
+                        observed?&rdquo; If almost never → the labels matter → reject H₀.
                       </p>
                       <LabeledSlider
                         label="Number of permutations"
@@ -2174,6 +2279,16 @@ print(f"p = {result.pvalue:.4f}")`}
                 <strong>Scenario:</strong> Same 8 coffee batches are each split and roasted
                 two ways — light and dark. Which roast profile scores better?
               </p>
+
+              <InfoBox>
+                <strong>Why pairing changes everything.</strong> Different coffee batches
+                vary in bean quality — some are naturally better than others. If we used
+                an independent test here, that batch-to-batch noise would obscure the roast
+                effect. But because <em>the same batch</em> is roasted both ways, we can
+                subtract out the batch quality and isolate the pure roast effect. Pairing
+                turns a noisy two-sample problem into a cleaner one-sample problem on the
+                differences.
+              </InfoBox>
 
               <Card>
                 <CardHeader>
@@ -2249,21 +2364,38 @@ print(f"p = {result.pvalue:.4f}")`}
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
-                    The key insight: a paired t-test is just a one-sample t-test on the
-                    <strong> differences</strong>. We test whether the mean difference is zero.
+                    The key insight: a paired t-test is just a <strong>one-sample t-test
+                    on the differences</strong>. Instead of two columns of scores, we collapse
+                    them into a single column of (Dark − Light) differences and test whether
+                    the average difference is zero.
+                  </p>
+                  <p className="text-sm text-slate-500 italic">
+                    Thinking process: &ldquo;For each batch, dark scored higher. But is +3 points
+                    consistent with random variation, or is it a real roast effect?&rdquo; The
+                    paired test answers this by treating the differences as our data and
+                    checking if their mean is significantly different from zero.
                   </p>
                   <p>
-                    <strong>H₀:</strong> <Tex math="\mu_d = 0" /> &nbsp;
+                    <strong>H₀:</strong> <Tex math="\mu_d = 0" /> (no roast effect on average) &nbsp;
                     <strong>H₁:</strong> <Tex math="\mu_d \neq 0" />
                   </p>
                   <Tex
                     math="t = \frac{\bar{d}}{s_d / \sqrt{n}}"
                     display
                   />
-                  <p><strong>Hand calculation:</strong></p>
+                  <p><strong>Hand calculation — step by step:</strong></p>
                   <p className="text-sm">
-                    Differences: {PAIRED_DIFFS.join(", ")}. Mean:{" "}
+                    <strong>Step 1.</strong> Compute each difference (Dark − Light): {PAIRED_DIFFS.join(", ")}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Step 2.</strong> Take the mean:{" "}
                     <Tex math={`\\bar{d} = \\frac{${PAIRED_DIFFS.join(" + ")}}{8} = ${fmt(DIFF_MEAN, 3)}`} />
+                  </p>
+                  <p className="text-sm">
+                    <strong>Step 3.</strong> Compute SD of differences: s<sub>d</sub> = {fmt(DIFF_STD, 3)}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Step 4.</strong> Standardize (same formula as the one-sample test):
                   </p>
                   <Tex
                     math={`t = \\frac{${fmt(DIFF_MEAN, 3)}}{${fmt(DIFF_STD, 3)} / \\sqrt{8}} = \\frac{${fmt(DIFF_MEAN, 3)}}{${fmt(DIFF_STD / Math.sqrt(8), 4)}} = ${fmt(PAIRED_T, 3)}`}
@@ -2292,7 +2424,12 @@ print(f"t = {t_stat:.3f}, p = {p_value:.4f}")`}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
-                  <p><strong>Wilcoxon signed-rank test:</strong></p>
+                  <p>
+                    <strong>Wilcoxon signed-rank test:</strong> Same logic as before — rank
+                    the absolute differences and check if the positive ranks dominate. It
+                    still uses the pairing, but doesn&apos;t assume the differences are normally
+                    distributed.
+                  </p>
                   <PythonCode
                     code={`from scipy.stats import wilcoxon
 
@@ -2300,8 +2437,11 @@ stat, p_value = wilcoxon(dark, light)
 print(f"W = {stat:.1f}, p = {p_value:.4f}")`}
                   />
                   <p>
-                    <strong>Sign test:</strong> All 8 differences are positive. Under H₀,
-                    each difference has a 50% chance of being positive. Getting 8/8 positive:
+                    <strong>Sign test:</strong> The ultimate simplification — ignore the
+                    magnitudes entirely and just count: are differences mostly positive or
+                    mostly negative? All 8 differences are positive. Under H₀, each
+                    difference has a 50% chance of being positive. Getting 8/8 positive is
+                    like flipping 8 heads in a row:
                   </p>
                   <Tex
                     math={`P(X = 8 \\mid p = 0.5) = \\binom{8}{8} (0.5)^8 = \\frac{1}{256} = 0.0039`}
@@ -2374,14 +2514,30 @@ print(f"p = {result.pvalue:.4f}")  # 0.0078 (two-sided)`}
                     <Tex math="\mu_E = \mu_C = \mu_B = \mu_K" /> &nbsp;
                     <strong>H₁:</strong> At least one mean differs
                   </p>
+                  <InfoBox>
+                    <strong>The core intuition behind ANOVA.</strong> Imagine the group means
+                    are spread far apart (Ethiopian ≈ 84, Brazilian ≈ 77) but individual
+                    scores within each group barely vary (±2 points). The between-group
+                    spread dominates the within-group noise → strong signal → large F.
+                    Now imagine the opposite: group means are nearly identical but
+                    individual scores swing wildly. The within-group noise swamps any
+                    differences → weak signal → small F. ANOVA is fundamentally a
+                    <strong> signal-to-noise ratio</strong>.
+                  </InfoBox>
                   <p>
-                    ANOVA partitions total variation into <strong>between-group</strong> (SSB)
-                    and <strong>within-group</strong> (SSW) components:
+                    ANOVA partitions total variation into <strong>between-group</strong> (SSB — the signal)
+                    and <strong>within-group</strong> (SSW — the noise) components:
                   </p>
                   <Tex
                     math="F = \frac{\text{MSB}}{\text{MSW}} = \frac{\text{SSB} / (k-1)}{\text{SSW} / (N-k)}"
                     display
                   />
+                  <p className="text-sm text-slate-500 italic">
+                    Read F as: &ldquo;How much bigger is the between-group variance than the
+                    within-group variance?&rdquo; If F ≈ 1, the groups differ no more than
+                    random noise would predict. If F ≫ 1, the group means are more spread
+                    out than chance alone can explain.
+                  </p>
                   <p><strong>Hand calculation:</strong></p>
                   <Tex
                     math={`\\text{SSB} = \\sum_{j=1}^{k} n_j (\\bar{x}_j - \\bar{x}_{\\cdot\\cdot})^2`}
@@ -2460,8 +2616,10 @@ print(f"F = {F_stat:.2f}, p = {p_value:.8f}")`}
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
-                    <strong>Kruskal-Wallis</strong> is the nonparametric ANOVA — it compares
-                    rank sums instead of means:
+                    <strong>Kruskal-Wallis</strong> is the nonparametric ANOVA — same idea
+                    (signal vs noise), but using <em>ranks</em> instead of raw values. Pool
+                    all 24 scores, rank them 1–24, and check whether each group&apos;s
+                    average rank differs more than chance would predict:
                   </p>
                   <PythonCode
                     code={`from scipy.stats import kruskal
@@ -2471,8 +2629,10 @@ print(f"H = {H_stat:.2f}, p = {p_value:.6f}")`}
                   />
                   <p>
                     <strong>Post-hoc Tukey HSD:</strong> ANOVA tells us <em>something</em> differs,
-                    but not <em>which pairs</em>. Tukey&apos;s test compares all pairs with
-                    multiplicity correction:
+                    but not <em>which pairs</em>. Think of it like a smoke detector — it tells
+                    you there&apos;s a fire somewhere, but you still need to find which room.
+                    Tukey&apos;s test compares all pairs while correcting for the fact that more
+                    comparisons mean more chances for false positives:
                   </p>
                   <PythonCode
                     code={`from scipy.stats import tukey_hsd
@@ -2569,11 +2729,25 @@ for i, name_i in enumerate(['Eth', 'Col', 'Bra', 'Ken']):
                     <strong>H₀:</strong> Roast level and repurchase are independent.{" "}
                     <strong>H₁:</strong> They are associated.
                   </p>
+                  <InfoBox>
+                    <strong>The thinking process.</strong> &ldquo;Independence&rdquo; means knowing
+                    someone&apos;s roast preference tells you <em>nothing</em> about whether
+                    they&apos;ll buy again. If 62.5% of <em>all</em> customers buy again
+                    (75/120), then — under independence — 62.5% of light-roast customers
+                    <em> and</em> 62.5% of dark-roast customers should buy again. The
+                    chi-square test measures how far the observed counts deviate from these
+                    &ldquo;expected under independence&rdquo; counts. Big deviations → the variables
+                    are not independent.
+                  </InfoBox>
                   <p><strong>Step 1 — Expected counts</strong> under independence:</p>
                   <Tex
                     math="E_{ij} = \frac{\text{Row total}_i \times \text{Col total}_j}{\text{Grand total}}"
                     display
                   />
+                  <p className="text-sm text-slate-500 italic">
+                    Intuition: Each expected count asks &ldquo;if I distributed the column
+                    totals proportionally across rows, how many would land here?&rdquo;
+                  </p>
                   <p className="text-sm"><strong>Hand calculation:</strong></p>
                   <Tex
                     math={`E_{\\text{light,buy}} = \\frac{${CT_ROW_LIGHT} \\times ${CT_COL_BUY}}{${CT_TOTAL}} = ${fmt(E_LB, 1)}, \\quad E_{\\text{light,won't}} = \\frac{${CT_ROW_LIGHT} \\times ${CT_COL_WONT}}{${CT_TOTAL}} = ${fmt(E_LW, 1)}`}
@@ -2621,8 +2795,11 @@ print(f"Expected counts:\\n{expected}")`}
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
                     <strong>Fisher&apos;s exact test:</strong> When expected counts are small (&lt; 5),
-                    the chi-square approximation breaks down. Fisher&apos;s test calculates exact
-                    probabilities using the hypergeometric distribution.
+                    the chi-square approximation (which relies on large-sample theory) breaks
+                    down. Fisher&apos;s test skips the approximation entirely — it calculates the
+                    exact probability of every possible table arrangement that has the same
+                    row and column totals, using the hypergeometric distribution. Slower to
+                    compute, but always valid regardless of sample size.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import fisher_exact
@@ -2631,8 +2808,12 @@ odds_ratio, p_value = fisher_exact([[45, 15], [30, 30]])
 print(f"Odds ratio = {odds_ratio:.2f}, p = {p_value:.4f}")`}
                   />
                   <p>
-                    <strong>McNemar&apos;s test:</strong> For <em>paired</em> categorical data. Example:
-                    the same 60 customers are asked before and after trying a new blend.
+                    <strong>McNemar&apos;s test:</strong> The paired equivalent for categorical data —
+                    just like the paired t-test uses within-subject differences, McNemar&apos;s
+                    focuses on the <em>discordant pairs</em> (people who switched). Only the
+                    &ldquo;switchers&rdquo; carry information — people who bought before and after, or
+                    didn&apos;t both times, tell us nothing about change. Example: the same 60
+                    customers are asked before and after trying a new blend.
                   </p>
                   <PythonCode
                     code={`from statsmodels.stats.contingency_tables import mcnemar
@@ -2662,9 +2843,19 @@ print(f"p = {result.pvalue:.4f}")`}
             <StepContent className="space-y-4">
               <p>
                 <strong>Scenario:</strong> Are Sunrise Roasters&apos; taste scores normally
-                distributed? This matters — parametric tests assume normality. If the data
-                isn&apos;t normal, we should use nonparametric alternatives.
+                distributed? This matters — parametric tests (t-test, ANOVA) assume
+                normality. If the data isn&apos;t normal, we should use nonparametric alternatives.
               </p>
+
+              <InfoBox>
+                <strong>When does normality actually matter?</strong> Here&apos;s the nuance most
+                textbooks skip. For <em>t-tests and ANOVA</em>, the Central Limit Theorem
+                makes the test statistic approximately normal even with non-normal data —
+                as long as n is large enough (roughly n ≥ 30). So normality matters most
+                for (1) small samples and (2) heavily skewed or outlier-prone data. For
+                <em> correlation tests</em>, normality of the joint distribution matters
+                regardless of n.
+              </InfoBox>
 
               <Card>
                 <CardHeader>
@@ -2676,9 +2867,15 @@ print(f"p = {result.pvalue:.4f}")`}
                   <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
                     <div className="space-y-3">
                       <p className="text-sm">
-                        A QQ (quantile-quantile) plot compares your sample quantiles against
-                        theoretical normal quantiles. If the data is normal, points hug the
-                        diagonal line.
+                        A QQ (quantile-quantile) plot is the single most useful visual
+                        diagnostic for normality. Here&apos;s how to read it:
+                      </p>
+                      <p className="text-sm text-slate-500 italic">
+                        For each data point, we ask: &ldquo;What value <em>should</em> this be if
+                        the data were perfectly normal?&rdquo; Then we plot actual vs expected. If
+                        points follow the diagonal → normal. If they curve up at both ends → heavy
+                        tails. If they curve up at one end → skewed. The pattern of departure
+                        tells you <em>how</em> the data deviates from normality.
                       </p>
                       <p className="text-sm">
                         <strong>Data:</strong> Ethiopian scores — {(showNonNormal ? nonNormalData.map((v) => fmt(v, 1)) : ETHIOPIAN).join(", ")}
@@ -2712,7 +2909,8 @@ print(f"p = {result.pvalue:.4f}")`}
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
                     <strong>Shapiro-Wilk test</strong> — the gold standard for normality testing.
-                    H₀: the data is normally distributed.
+                    H₀: the data is normally distributed. It essentially measures how well
+                    the ordered data matches the expected spacings of a normal distribution.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import shapiro
@@ -2723,8 +2921,10 @@ print(f"W = {stat:.4f}, p = {p_value:.4f}")
 # Large p → no evidence against normality`}
                   />
                   <p>
-                    <strong>Kolmogorov-Smirnov test</strong> — measures the maximum distance
-                    between the empirical CDF and the theoretical CDF:
+                    <strong>Kolmogorov-Smirnov test</strong> — takes a different approach: it
+                    draws the cumulative distribution of your data (the empirical CDF) and
+                    the theoretical normal CDF, then finds the <em>single biggest gap</em>
+                    between them:
                   </p>
                   <Tex
                     math="D = \sup_x |F_n(x) - F(x)|"
@@ -2815,10 +3015,24 @@ observed, bin_edges = np.histogram(scores, bins=5)
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
+                  <InfoBox>
+                    <strong>What Pearson r actually measures.</strong> For each data point,
+                    ask: &ldquo;Is x above its mean AND y above its mean?&rdquo; If they consistently
+                    move together (both high or both low), the cross-products are positive
+                    → r is positive. If they move in opposite directions → r is negative.
+                    If there&apos;s no consistent pattern → cross-products cancel out → r ≈ 0.
+                    Crucially, r only captures <strong>linear</strong> co-movement. A perfect
+                    curve can produce r = 0.
+                  </InfoBox>
                   <Tex
                     math="r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \cdot \sum (y_i - \bar{y})^2}}"
                     display
                   />
+                  <p className="text-sm text-slate-500 italic">
+                    The numerator sums the cross-products of deviations — positive when
+                    x and y deviate in the same direction, negative when they deviate in
+                    opposite directions. The denominator normalizes to [−1, +1].
+                  </p>
                   <p><strong>Hand calculation:</strong></p>
                   <p className="text-sm">
                     <Tex math={`\\bar{x} = ${fmt(CORR_TEMP_MEAN, 1)}`} />,{" "}
@@ -2863,9 +3077,10 @@ print(f"r = {r:.4f}, p = {p_value:.4f}")`}
                 </CardHeader>
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
-                    <strong>Spearman&apos;s ρ</strong> — Pearson correlation on the <em>ranks</em>.
-                    Detects monotonic relationships (consistently increasing or decreasing),
-                    not just linear ones.
+                    <strong>Spearman&apos;s ρ</strong> — Replace each value with its rank (1st, 2nd,
+                    3rd...) and compute Pearson r on the ranks. This detects <em>monotonic</em>{" "}
+                    relationships — &ldquo;as x increases, y consistently increases (or decreases)&rdquo;
+                    — even if the relationship is curved, as long as it doesn&apos;t change direction.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import spearmanr
@@ -2874,8 +3089,11 @@ rho, p_value = spearmanr(temp, taste)
 print(f"ρ = {rho:.4f}, p = {p_value:.4f}")`}
                   />
                   <p>
-                    <strong>Kendall&apos;s τ</strong> — counts concordant vs discordant pairs.
-                    More robust than Spearman for small samples.
+                    <strong>Kendall&apos;s τ</strong> — an even simpler idea: look at every possible
+                    pair of data points and count &ldquo;concordant&rdquo; pairs (both x and y increase
+                    together) vs &ldquo;discordant&rdquo; pairs (one goes up, the other goes down).
+                    τ = (concordant − discordant) / total pairs. More robust than Spearman
+                    for small samples and easier to interpret.
                   </p>
                   <PythonCode
                     code={`from scipy.stats import kendalltau
@@ -2907,6 +3125,15 @@ print(f"τ = {tau:.4f}, p = {p_value:.4f}")`}
                 and Colombian beans. Most attributes are truly the same.
               </p>
 
+              <InfoBox>
+                <strong>The lottery ticket analogy.</strong> Each test at α = 0.05 has a 5%
+                chance of a false positive — like a lottery ticket with a 5% chance of
+                &ldquo;winning.&rdquo; One ticket? Probably nothing. But buy 20 tickets and your
+                chance of at least one &ldquo;win&rdquo; (false positive) skyrockets. Running
+                many tests without correction is like buying lots of lottery tickets and
+                pretending each win was skill, not luck.
+              </InfoBox>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -2925,6 +3152,7 @@ print(f"τ = {tau:.4f}, p = {p_value:.4f}")`}
                   <p className="text-sm">
                     With {nTests} tests, there&apos;s a {fmt((1 - Math.pow(0.95, nTests)) * 100, 1)}%
                     chance of at least one false discovery — even if nothing is truly different!
+                    This is why you can&apos;t just test everything and cherry-pick the significant results.
                   </p>
                 </CardContent>
               </Card>
@@ -2956,17 +3184,27 @@ print(f"τ = {tau:.4f}, p = {p_value:.4f}")`}
                       />
                       <div className="space-y-2 text-sm">
                         <p>
-                          <strong>1. Bonferroni:</strong> Use <Tex math={`\\alpha_{\\text{adj}} = \\alpha / m = 0.05 / ${nTests} = ${fmt(0.05 / nTests, 4)}`} />.
-                          Very conservative — controls FWER (family-wise error rate).
+                          <strong>1. Bonferroni:</strong> The simplest fix — divide α by the
+                          number of tests: <Tex math={`\\alpha_{\\text{adj}} = \\alpha / m = 0.05 / ${nTests} = ${fmt(0.05 / nTests, 4)}`} />.
+                          Intuition: make each individual test so strict that the total
+                          false positive rate stays at 0.05. Very conservative — it controls
+                          the probability of <em>any</em> false positive (FWER).
                         </p>
                         <p>
-                          <strong>2. Holm-Bonferroni:</strong> Step-down procedure. Sort p-values,
-                          compare p₍ᵢ₎ to α/(m−i+1). Less conservative than Bonferroni.
+                          <strong>2. Holm-Bonferroni:</strong> A smarter version of Bonferroni.
+                          Sort p-values smallest to largest, and compare each p₍ᵢ₎ to
+                          α/(m−i+1). The first comparison is as strict as Bonferroni, but
+                          subsequent ones are less strict — taking advantage of the fact
+                          that earlier rejections &ldquo;use up&rdquo; some of the allowed error.
+                          Always at least as powerful as Bonferroni.
                         </p>
                         <p>
-                          <strong>3. Benjamini-Hochberg (BH):</strong> Controls FDR (false discovery rate).
-                          Sort p-values and compare p₍ᵢ₎ to (i/m)×α. The green diagonal line
-                          in the chart shows this threshold.
+                          <strong>3. Benjamini-Hochberg (BH):</strong> A fundamentally different
+                          philosophy — instead of controlling the chance of <em>any</em> false
+                          positive, it controls the <em>proportion</em> of false positives among
+                          your rejections (FDR). Sort p-values and compare p₍ᵢ₎ to (i/m)×α.
+                          The green diagonal line in the chart shows this threshold.
+                          Much more powerful when you&apos;re testing many hypotheses.
                         </p>
                       </div>
                     </div>
@@ -3003,10 +3241,12 @@ print(f"BH rejects: {sum(reject_bh)}")`}
               </Card>
 
               <InfoBox>
-                <strong>FWER vs FDR:</strong> Bonferroni/Holm control the probability of
-                <em> any</em> false positive (FWER). BH controls the <em>proportion</em> of
-                false positives among rejections (FDR). BH is less conservative and preferred
-                in exploratory analysis where some false leads are acceptable.
+                <strong>FWER vs FDR — when to use which?</strong> Bonferroni/Holm (FWER) are
+                for situations where even one false positive is costly — e.g., clinical
+                trials where a false positive could lead to an ineffective drug being
+                approved. BH (FDR) is for exploratory analysis — e.g., screening 1000
+                genes for drug targets — where some false leads are acceptable because
+                you&apos;ll validate the top hits in a follow-up study.
               </InfoBox>
             </StepContent>
           )}
@@ -3021,6 +3261,17 @@ print(f"BH rejects: {sum(reject_bh)}")`}
                 reliably detect a taste difference between two origins?
               </p>
 
+              <InfoBox>
+                <strong>The four knobs of hypothesis testing.</strong> Power depends on
+                exactly four things: (1) <strong>Effect size</strong> — how big is the real
+                difference? Bigger effects are easier to detect. (2) <strong>Sample size</strong>{" "}
+                — more data = more precision = more power. (3) <strong>α level</strong> — a
+                stricter threshold (smaller α) makes it harder to reject H₀, reducing power.
+                (4) <strong>Variance</strong> — noisier data requires more samples to detect
+                the same effect. You can only control n and α; the effect and variance are
+                properties of the world.
+              </InfoBox>
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -3030,7 +3281,8 @@ print(f"BH rejects: {sum(reject_bh)}")`}
                 <CardContent className="space-y-4 text-slate-700">
                   <p>
                     Before computing power, we need to quantify the effect we want to detect.
-                    Cohen&apos;s d standardizes the difference in means:
+                    Cohen&apos;s d standardizes the difference — it tells you &ldquo;how many standard
+                    deviations apart are the two groups?&rdquo;
                   </p>
                   <Tex
                     math="d = \frac{\mu_1 - \mu_2}{\sigma}"
@@ -3164,10 +3416,13 @@ print(f"Power with n=20: {power:.3f}")`}
               </Card>
 
               <InfoBox>
-                <strong>Plan your sample size before collecting data.</strong> A study with
-                too few observations wastes resources by being unlikely to detect real effects.
-                The conventional target is 80% power — meaning a 4-in-5 chance of finding a
-                real effect if one exists.
+                <strong>Plan your sample size before collecting data.</strong> An
+                underpowered study is worse than no study at all — you spend time and money
+                collecting data that probably won&apos;t find anything, and the few
+                &ldquo;significant&rdquo; results that do emerge are likely to be exaggerated
+                (the &ldquo;winner&apos;s curse&rdquo;). The conventional target is 80% power —
+                meaning a 4-in-5 chance of finding a real effect if one exists. Many
+                journals now require a power analysis in the study design section.
               </InfoBox>
             </StepContent>
           )}
