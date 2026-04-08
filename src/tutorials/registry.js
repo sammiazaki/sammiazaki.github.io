@@ -78,13 +78,33 @@ const tutorials = [
     component: lazy(() => import("./difference-in-differences/DifferenceInDifferencesTutorial.jsx")),
   },
   {
-    slug: "ols-by-hand",
+    slug: "anatomy-of-ols",
     title: "Anatomy of OLS",
     description:
       "Derive the OLS estimator from scratch — calculus, matrix algebra, projection geometry, and hand calculations on a real dataset.",
     date: "2026-04-08",
     tags: ["regression", "OLS", "linear algebra", "econometrics"],
-    component: lazy(() => import("./ols-by-hand/OLSByHandTutorial.jsx")),
+    component: lazy(() => import("./anatomy-of-ols/AnatomyOfOLSTutorial.jsx")),
+  },
+  {
+    slug: "hypothesis-testing",
+    title: "Statistical Hypothesis Testing",
+    description:
+      "A comprehensive guide to every major test family — from t-tests to ANOVA, chi-square to permutation tests — with hand calculations, Python code, and interactive visualizations.",
+    date: "2026-04-08",
+    tags: [
+      "inference",
+      "hypothesis testing",
+      "t-test",
+      "ANOVA",
+      "chi-square",
+      "nonparametric",
+      "multiple testing",
+      "power analysis",
+    ],
+    component: lazy(
+      () => import("./hypothesis-testing/HypothesisTestingTutorial.jsx")
+    ),
   },
   {
     slug: "panel-data",
