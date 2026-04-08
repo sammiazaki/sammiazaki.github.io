@@ -78,6 +78,15 @@ const tutorials = [
     component: lazy(() => import("./difference-in-differences/DifferenceInDifferencesTutorial.jsx")),
   },
   {
+    slug: "ols-by-hand",
+    title: "OLS by Hand",
+    description:
+      "Full derivation of Ordinary Least Squares — calculus, matrix algebra, geometric intuition, and hand calculations with a concrete dataset.",
+    date: "2026-04-08",
+    tags: ["regression", "OLS", "linear algebra", "econometrics"],
+    component: lazy(() => import("./ols-by-hand/OLSByHandTutorial.jsx")),
+  },
+  {
     slug: "panel-data",
     title: "Panel Data & Fixed Effects",
     description:
