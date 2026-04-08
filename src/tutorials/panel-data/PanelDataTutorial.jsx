@@ -885,16 +885,17 @@ export default function PanelDataTutorial() {
                         We index outcomes as <Tex math="Y_{it}" /> — the inspection score of
                         restaurant <Tex math="i" /> in year <Tex math="t" />. Treatment{" "}
                         <Tex math="D_{it} = 1" /> if the restaurant held a grant that year.
-                        The model is:
+                        The true data-generating process is:
                         <div className="mt-2">
                           <Tex
-                            math="Y_{it} = \alpha_i + \beta D_{it} + \varepsilon_{it}"
+                            math="Y_{it} = \beta D_{it} + \gamma\, u_i + \varepsilon_{it}"
                             display
                           />
                         </div>
-                        where <Tex math="\alpha_i" /> absorbs all time-invariant restaurant
-                        differences (including culture <Tex math="u_i" />). We will add time
-                        effects <Tex math="\delta_t" /> later.
+                        where <Tex math="u_i" /> is unobserved cleanliness culture — constant
+                        over time for each restaurant, but correlated with grant uptake. Fixed
+                        effects will eliminate <Tex math="u_i" /> by comparing each restaurant
+                        to itself.
                       </InfoBox>
                       <div className="grid gap-3 grid-cols-3">
                         <StatCard label="Restaurants (i)" value="50 units" formula={"i = 1, \\ldots, 50"} />
