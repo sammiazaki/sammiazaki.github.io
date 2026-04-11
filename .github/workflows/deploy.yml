@@ -23,7 +23,9 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - uses: astral-sh/setup-uv@v4
       - run: npm ci
+      - run: make notebooks
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

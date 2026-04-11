@@ -22,8 +22,14 @@ export default function BlogLayout() {
             Sam Miazaki
           </Link>
           <nav className="flex items-center gap-6 text-sm">
-            <NavLink to="/noodlelab">Noodlelab</NavLink>
-            <NavLink to="/about">About</NavLink>
+            <NavLink to="/noodlelab">Chalkboard</NavLink>
+            <a
+              href="/notebooks/"
+              className="text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              Workbench
+            </a>
+            <NavLink to="/about">AboutMe</NavLink>
           </nav>
         </div>
       </header>
@@ -35,14 +41,11 @@ export default function BlogLayout() {
       <footer className="border-t bg-white">
         <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-8 text-sm text-slate-500">
           <span>Sam Miazaki</span>
-          <a
-            href="https://sammiazaki.substack.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-slate-800 transition-colors"
-          >
-            Substack
-          </a>
+          <div className="flex gap-4">
+            <a href="https://github.com/sammiazaki" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 transition-colors">GitHub</a>
+            <a href="https://www.linkedin.com/in/sajad-mirzababaei/" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 transition-colors">LinkedIn</a>
+            <a href="https://sammiazaki.substack.com" target="_blank" rel="noopener noreferrer" className="hover:text-slate-800 transition-colors">Substack</a>
+          </div>
         </div>
       </footer>
     </div>
