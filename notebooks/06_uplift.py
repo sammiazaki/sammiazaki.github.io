@@ -573,23 +573,26 @@ def _(mo):
 @app.cell
 def _(df_pred, np, plt):
     def uplift_curve(data, cate_col, outcome="visit", treatment="treated"):
-        """Compute uplift curve (cumulative gains)."""
+        """Compute uplift curve (cumulative gains) — vectorized."""
         sorted_df = data.sort_values(cate_col, ascending=False).reset_index(drop=True)
         n = len(sorted_df)
 
+        t_mask = sorted_df[treatment].values == 1
+        y = sorted_df[outcome].values.astype(float)
+
+        cum_t_outcome = np.cumsum(y * t_mask)
+        cum_t_count = np.cumsum(t_mask)
+        cum_c_outcome = np.cumsum(y * ~t_mask)
+        cum_c_count = np.cumsum(~t_mask)
+
         fractions = np.arange(1, n + 1) / n
-        cumulative_uplift = []
 
-        for i in range(1, n + 1):
-            top_k = sorted_df.iloc[:i]
-            _t = top_k[top_k[treatment] == 1]
-            _c = top_k[top_k[treatment] == 0]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            t_mean = np.where(cum_t_count > 0, cum_t_outcome / cum_t_count, 0.0)
+            c_mean = np.where(cum_c_count > 0, cum_c_outcome / cum_c_count, 0.0)
 
-            if len(_t) > 0 and len(_c) > 0:
-                uplift = _t[outcome].mean() - _c[outcome].mean()
-            else:
-                uplift = 0
-            cumulative_uplift.append(uplift * (i / n))
+        uplift = np.where((cum_t_count > 0) & (cum_c_count > 0), t_mean - c_mean, 0.0)
+        cumulative_uplift = uplift * fractions
 
         return fractions, cumulative_uplift
 
