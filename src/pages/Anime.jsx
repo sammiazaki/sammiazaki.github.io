@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 
 const WATCHING = [
   { title: "Hell's Paradise", malId: 46569, mal: "46569/Jigokuraku", episodes: 13, genres: ["Action", "Supernatural"] },
+  { title: "To Your Eternity", malId: 41025, mal: "41025/Fumetsu_no_Anata_e", episodes: 60, genres: ["Adventure", "Supernatural"] },
 ];
 
 const ANIME = [
@@ -324,7 +325,7 @@ function AnimeCard({ anime, posterUrl }) {
 export default function Anime() {
   const allAnime = useMemo(() => [...WATCHING, ...ANIME], []);
   const posters = useAnimePosters(allAnime);
-  const stats = useMemo(() => computeStats(ANIME), []);
+  const stats = useMemo(() => computeStats([...ANIME, ...WATCHING]), []);
 
   return (
     <motion.div
