@@ -5,33 +5,37 @@ import { ArrowLeft } from "lucide-react";
 
 /* ── data ───────────────────────────────────────────────────────────── */
 
+const WATCHING = [
+  { title: "Hell's Paradise", malId: 46569, mal: "46569/Jigokuraku", episodes: 13, genres: ["Action", "Supernatural"] },
+];
+
 const ANIME = [
-  { title: "Attack on Titan", malId: 16498, mal: "16498/Shingeki_no_Kyojin", episodes: 87, genres: ["Action", "Dark Fantasy"] },
+  { title: "Attack on Titan", malId: 16498, mal: "16498/Shingeki_no_Kyojin", episodes: 94, genres: ["Action", "Dark Fantasy"] },
   { title: "Avatar: The Last Airbender", poster: "https://m.media-amazon.com/images/M/MV5BMDMwMThjYWYtY2Q2OS00OGM2LTlkODQtNDJlZTZmMjAyYmFhXkEyXkFqcGc@._V1_SX300.jpg", extUrl: "https://www.imdb.com/title/tt0417299/", episodes: 61, genres: ["Action", "Adventure"] },
   { title: "The Legend of Korra", poster: "https://m.media-amazon.com/images/M/MV5BMWIyMDNmMGMtZTRjZi00ZWJkLWE2ZjAtMjYwOGFiZGVkZmYzXkEyXkFqcGc@._V1_SX300.jpg", extUrl: "https://www.imdb.com/title/tt1695360/", episodes: 52, genres: ["Action", "Adventure"] },
   { title: "Berserk", malId: 33, mal: "33/Kenpuu_Denki_Berserk", episodes: 25, genres: ["Action", "Dark Fantasy"] },
   { title: "Black Clover", malId: 34572, mal: "34572/Black_Clover", episodes: 170, genres: ["Action", "Shounen"] },
   { title: "Chainsaw Man", malId: 44511, mal: "44511/Chainsaw_Man", episodes: 12, genres: ["Action", "Dark Fantasy"] },
   { title: "Cyberpunk: Edgerunners", malId: 42310, mal: "42310/Cyberpunk__Edgerunners", episodes: 10, genres: ["Action", "Sci-Fi"] },
-  { title: "Dandadan", malId: 57334, mal: "57334/Dandadan", episodes: 12, genres: ["Action", "Supernatural"] },
+  { title: "Dandadan", malId: 57334, mal: "57334/Dandadan", episodes: 24, genres: ["Action", "Supernatural"] },
   { title: "Death Note", malId: 1535, mal: "1535/Death_Note", episodes: 37, genres: ["Thriller", "Supernatural"] },
-  { title: "Demon Slayer", malId: 38000, mal: "38000/Kimetsu_no_Yaiba", episodes: 55, genres: ["Action", "Shounen"] },
+  { title: "Demon Slayer", malId: 38000, mal: "38000/Kimetsu_no_Yaiba", episodes: 63, genres: ["Action", "Shounen"] },
   { title: "Dororo", malId: 37520, mal: "37520/Dororo", episodes: 24, genres: ["Action", "Historical"] },
-  { title: "Dr. Stone", malId: 38691, mal: "38691/Dr_Stone", episodes: 60, genres: ["Adventure", "Sci-Fi"] },
+  { title: "Dr. Stone", malId: 38691, mal: "38691/Dr_Stone", episodes: 81, genres: ["Adventure", "Sci-Fi"] },
   { title: "Fate/stay night", malId: 356, mal: "356/Fate_stay_night", episodes: 24, genres: ["Action", "Fantasy"] },
   { title: "Fate/stay night: UBW", malId: 27821, mal: "27821/Fate_stay_night__Unlimited_Blade_Works_Prologue", episodes: 26, genres: ["Action", "Fantasy"] },
   { title: "Fate/Zero", malId: 10087, mal: "10087/Fate_Zero", episodes: 25, genres: ["Action", "Fantasy"] },
-  { title: "Fate/strange Fake", malId: 55830, mal: "55830/Fate_strange_Fake", episodes: 1, genres: ["Action", "Fantasy"] },
-  { title: "Frieren: Beyond Journey's End", malId: 52991, mal: "52991/Frieren__Beyond_Journey_s_End", episodes: 28, genres: ["Adventure", "Fantasy"] },
+  { title: "Fate/strange Fake", malId: 55830, mal: "55830/Fate_strange_Fake", episodes: 13, genres: ["Action", "Fantasy"] },
+  { title: "Frieren: Beyond Journey's End", malId: 52991, mal: "52991/Frieren__Beyond_Journey_s_End", episodes: 38, genres: ["Adventure", "Fantasy"] },
   { title: "Fullmetal Alchemist: Brotherhood", malId: 5114, mal: "5114/Fullmetal_Alchemist__Brotherhood", episodes: 64, genres: ["Action", "Fantasy"] },
   { title: "Hunter x Hunter", malId: 11061, mal: "11061/Hunter_x_Hunter_2011", episodes: 148, genres: ["Action", "Adventure"] },
-  { title: "Jujutsu Kaisen", malId: 40748, mal: "40748/Jujutsu_Kaisen", episodes: 48, genres: ["Action", "Supernatural"] },
-  { title: "Mushoku Tensei", malId: 39535, mal: "39535/Mushoku_Tensei__Isekai_Ittara_Honki_Dasu", episodes: 34, genres: ["Fantasy", "Isekai"] },
-  { title: "My Hero Academia", malId: 31964, mal: "31964/Boku_no_Hero_Academia", episodes: 138, genres: ["Action", "Shounen"] },
-  { title: "One Punch Man", malId: 30276, mal: "30276/One_Punch_Man", episodes: 24, genres: ["Action", "Comedy"] },
-  { title: "Sakamoto Days", malId: 56693, mal: "56693/Sakamoto_Days", mangaMal: "131334/Sakamoto_Days", episodes: 11, genres: ["Action", "Comedy"] },
-  { title: "Solo Leveling", malId: 52299, mal: "52299/Ore_dake_Level_Up_na_Ken", episodes: 24, genres: ["Action", "Fantasy"] },
-  { title: "Spy x Family", malId: 50265, mal: "50265/Spy_x_Family", episodes: 37, genres: ["Action", "Comedy"] },
+  { title: "Jujutsu Kaisen", malId: 40748, mal: "40748/Jujutsu_Kaisen", episodes: 59, genres: ["Action", "Supernatural"] },
+  { title: "Mushoku Tensei", malId: 39535, mal: "39535/Mushoku_Tensei__Isekai_Ittara_Honki_Dasu", episodes: 48, genres: ["Fantasy", "Isekai"] },
+  { title: "My Hero Academia", malId: 31964, mal: "31964/Boku_no_Hero_Academia", episodes: 170, genres: ["Action", "Shounen"] },
+  { title: "One Punch Man", malId: 30276, mal: "30276/One_Punch_Man", episodes: 36, genres: ["Action", "Comedy"] },
+  { title: "Sakamoto Days", malId: 56693, mal: "56693/Sakamoto_Days", mangaMal: "131334/Sakamoto_Days", episodes: 22, genres: ["Action", "Comedy"] },
+  { title: "Solo Leveling", malId: 52299, mal: "52299/Ore_dake_Level_Up_na_Ken", episodes: 25, genres: ["Action", "Fantasy"] },
+  { title: "Spy x Family", malId: 50265, mal: "50265/Spy_x_Family", episodes: 50, genres: ["Action", "Comedy"] },
   { title: "The Kingdoms of Ruin", malId: 54362, mal: "54362/Hametsu_no_Oukoku", episodes: 12, genres: ["Action", "Fantasy"] },
   { title: "Tokyo Revengers", malId: 42249, mal: "42249/Tokyo_Revengers", episodes: 49, genres: ["Action", "Drama"] },
   { title: "Vinland Saga", malId: 37521, mal: "37521/Vinland_Saga", episodes: 48, genres: ["Action", "Historical"] },
@@ -318,7 +322,8 @@ function AnimeCard({ anime, posterUrl }) {
 /* ── page ───────────────────────────────────────────────────────────── */
 
 export default function Anime() {
-  const posters = useAnimePosters(ANIME);
+  const allAnime = useMemo(() => [...WATCHING, ...ANIME], []);
+  const posters = useAnimePosters(allAnime);
   const stats = useMemo(() => computeStats(ANIME), []);
 
   return (
@@ -339,7 +344,7 @@ export default function Anime() {
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">Anime</h1>
         <p className="text-slate-500 text-sm">
-          {ANIME.length} titles and counting. Always open to recommendations
+          {ANIME.length + WATCHING.length} titles and counting. Always open to recommendations
           &mdash;{" "}
           <a
             href="mailto:ss.mirzababaei@gmail.com"
@@ -354,15 +359,37 @@ export default function Anime() {
       {/* stats */}
       <StatsHero stats={stats} />
 
-      {/* card grid */}
-      <motion.div
-        variants={stagger}
-        className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-      >
-        {ANIME.map((a) => (
-          <AnimeCard key={a.malId || a.title} anime={a} posterUrl={a.malId ? posters[a.malId] : null} />
-        ))}
-      </motion.div>
+      {/* currently watching */}
+      {WATCHING.length > 0 && (
+        <motion.section variants={fade} className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-800">
+            Currently Watching
+          </h2>
+          <motion.div
+            variants={stagger}
+            className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+          >
+            {WATCHING.map((a) => (
+              <AnimeCard key={a.malId || a.title} anime={a} posterUrl={a.malId ? posters[a.malId] : null} />
+            ))}
+          </motion.div>
+        </motion.section>
+      )}
+
+      {/* completed */}
+      <motion.section variants={fade} className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight text-slate-800">
+          Completed
+        </h2>
+        <motion.div
+          variants={stagger}
+          className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+        >
+          {ANIME.map((a) => (
+            <AnimeCard key={a.malId || a.title} anime={a} posterUrl={a.malId ? posters[a.malId] : null} />
+          ))}
+        </motion.div>
+      </motion.section>
     </motion.div>
   );
 }
