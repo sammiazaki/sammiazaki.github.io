@@ -30,7 +30,7 @@ def build_index():
     cards = ""
     for e in entries:
         cards += f"""
-      <a href="{e['file']}" class="card">
+      <a href="{e['file']}" target="_blank" rel="noopener noreferrer" class="card">
         <h2>{e['title']}</h2>
         <p>{e['subtitle']}</p>
       </a>"""
@@ -40,7 +40,7 @@ def build_index():
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Noodlelab Notebooks</title>
+  <title>Workbench</title>
   <style>
     * {{ margin: 0; padding: 0; box-sizing: border-box; }}
     body {{
@@ -96,8 +96,8 @@ def build_index():
 <body>
   <div class="container">
     <a href="/" class="back">&larr; Back to site</a>
-    <h1>Noodlelab Notebooks</h1>
-    <p class="subtitle">Applied causal inference with real data &mdash; powered by marimo</p>
+    <h1>Workbench</h1>
+    <p class="subtitle">Marimo notebooks with real data</p>
     {cards}
   </div>
 </body>
