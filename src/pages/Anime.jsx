@@ -34,7 +34,7 @@ const ANIME = [
   { title: "Mushoku Tensei", malId: 39535, mal: "39535/Mushoku_Tensei__Isekai_Ittara_Honki_Dasu", episodes: 48, genres: ["Fantasy", "Isekai"] },
   { title: "My Hero Academia", malId: 31964, mal: "31964/Boku_no_Hero_Academia", episodes: 170, genres: ["Action", "Shounen"] },
   { title: "One Punch Man", malId: 30276, mal: "30276/One_Punch_Man", episodes: 36, genres: ["Action", "Comedy"] },
-  { title: "Sakamoto Days", malId: 56693, mal: "56693/Sakamoto_Days", mangaMal: "131334/Sakamoto_Days", episodes: 22, genres: ["Action", "Comedy"] },
+  { title: "Sakamoto Days", malId: 58939, mal: "58939/Sakamoto_Days", mangaMal: "131334/Sakamoto_Days", episodes: 22, genres: ["Action", "Comedy"] },
   { title: "Solo Leveling", malId: 52299, mal: "52299/Ore_dake_Level_Up_na_Ken", episodes: 25, genres: ["Action", "Fantasy"] },
   { title: "Spy x Family", malId: 50265, mal: "50265/Spy_x_Family", episodes: 50, genres: ["Action", "Comedy"] },
   { title: "The Kingdoms of Ruin", malId: 54362, mal: "54362/Hametsu_no_Oukoku", episodes: 12, genres: ["Action", "Fantasy"] },
