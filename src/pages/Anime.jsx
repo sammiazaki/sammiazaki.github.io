@@ -18,7 +18,7 @@ const ANIME = [
   { title: "Black Clover", malId: 34572, mal: "34572/Black_Clover", episodes: 170, genres: ["Action", "Shounen"] },
   { title: "Chainsaw Man", malId: 44511, mal: "44511/Chainsaw_Man", episodes: 12, genres: ["Action", "Dark Fantasy"] },
   { title: "Cyberpunk: Edgerunners", malId: 42310, mal: "42310/Cyberpunk__Edgerunners", episodes: 10, genres: ["Action", "Sci-Fi"] },
-  { title: "The Daily Life of the Immortal King", malId: 40389, mal: "40389/Xian_Wang_de_Richang_Shenghuo", episodes: 15, genres: ["Comedy", "Fantasy", "Slice of Life"] },
+  { title: "The Daily Life of the Immortal King", malId: 41094, mal: "41094/Xian_Wang_de_Richang_Shenghuo", episodes: 15, genres: ["Comedy", "Fantasy", "Slice of Life"] },
   { title: "Dandadan", malId: 57334, mal: "57334/Dandadan", episodes: 24, genres: ["Action", "Supernatural"] },
   { title: "Death Note", malId: 1535, mal: "1535/Death_Note", episodes: 37, genres: ["Thriller", "Supernatural"] },
   { title: "Demon Slayer", malId: 38000, mal: "38000/Kimetsu_no_Yaiba", episodes: 63, genres: ["Action", "Shounen"] },
