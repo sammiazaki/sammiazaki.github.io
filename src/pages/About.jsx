@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { useDocumentHead } from "@/lib/seo";
 
 const fade = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 const stagger = { animate: { transition: { staggerChildren: 0.07 } } };
@@ -74,6 +75,14 @@ const Dot = ({ tag }) => (
 );
 
 export default function About() {
+  useDocumentHead({
+    title: "About",
+    description:
+      "Sajad Mirzababaei (Sam Miazaki) — data science tech lead at Partnerz, Sharif MSc, focused on causal inference, NLP, and time-series.",
+    path: "/about",
+    type: "profile",
+  });
+
   return (
     <motion.div
       className="mx-auto max-w-2xl px-6 py-16 space-y-14"

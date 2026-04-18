@@ -2,11 +2,33 @@ import { Link } from "react-router-dom";
 import tutorials from "@/tutorials/registry";
 import { motion } from "framer-motion";
 import { BookOpen, ArrowUpRight } from "lucide-react";
+import { useDocumentHead, SITE_URL } from "@/lib/seo";
 
 const MAX_VISIBLE_TAGS = 4;
 
 export default function Chalkboard() {
   const sorted = [...tutorials].sort((a, b) => b.date.localeCompare(a.date));
+
+  useDocumentHead({
+    title: "Chalkboard — Interactive tutorials",
+    description:
+      "Interactive, math-first tutorials on statistics, causal inference, and the derivations that make them click.",
+    path: "/chalkboard",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "Chalkboard",
+      url: `${SITE_URL}/chalkboard`,
+      hasPart: sorted.map((t) => ({
+        "@type": "LearningResource",
+        name: t.title,
+        url: `${SITE_URL}/chalkboard/${t.slug}`,
+        description: t.description,
+        datePublished: t.date,
+        keywords: t.tags.join(", "),
+      })),
+    },
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
+import { useDocumentHead } from "@/lib/seo";
 
 /* ── data ───────────────────────────────────────────────────────────── */
 
@@ -327,6 +328,12 @@ export default function Anime() {
   const allAnime = useMemo(() => [...WATCHING, ...ANIME], []);
   const posters = useAnimePosters(allAnime);
   const stats = useMemo(() => computeStats([...ANIME, ...WATCHING]), []);
+
+  useDocumentHead({
+    title: "Anime Shelf",
+    description: "Anime I've watched and am currently watching — 26+ titles across action, fantasy, and slice-of-life.",
+    path: "/anime",
+  });
 
   return (
     <motion.div

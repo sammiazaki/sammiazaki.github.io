@@ -2,10 +2,50 @@ import { Suspense } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getTutorial } from "@/tutorials/registry";
 import { ExternalLink } from "lucide-react";
+import { useDocumentHead, SITE_URL } from "@/lib/seo";
 
 export default function TutorialPage() {
   const { slug } = useParams();
   const tutorial = getTutorial(slug);
+
+  useDocumentHead(
+    tutorial
+      ? {
+          title: tutorial.title,
+          description: tutorial.description,
+          path: `/chalkboard/${tutorial.slug}`,
+          type: "article",
+          jsonLd: {
+            "@context": "https://schema.org",
+            "@type": "LearningResource",
+            headline: tutorial.title,
+            name: tutorial.title,
+            description: tutorial.description,
+            url: `${SITE_URL}/chalkboard/${tutorial.slug}`,
+            datePublished: tutorial.date,
+            dateModified: tutorial.date,
+            keywords: tutorial.tags.join(", "),
+            inLanguage: "en",
+            author: { "@type": "Person", "name": "Sam Miazaki", "url": SITE_URL },
+            publisher: { "@type": "Person", "name": "Sam Miazaki", "url": SITE_URL },
+            image: `${SITE_URL}/avatar.png`,
+            mainEntityOfPage: `${SITE_URL}/chalkboard/${tutorial.slug}`,
+            ...(tutorial.source && {
+              isBasedOn: {
+                "@type": "CreativeWork",
+                name: tutorial.source.title,
+                author: { "@type": "Person", name: tutorial.source.author },
+                url: tutorial.source.url,
+              },
+            }),
+          },
+        }
+      : {
+          title: "Tutorial not found",
+          description: "The tutorial you're looking for doesn't exist.",
+          path: `/chalkboard/${slug || ""}`,
+        }
+  );
 
   if (!tutorial) {
     return (

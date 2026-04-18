@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import BlogLayout from "@/layouts/BlogLayout";
 import Home from "@/pages/Home";
 import Chalkboard from "@/pages/Chalkboard";
@@ -8,7 +8,7 @@ import Anime from "@/pages/Anime";
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route element={<BlogLayout />}>
           <Route index element={<Home />} />
@@ -18,6 +18,6 @@ export default function App() {
           <Route path="anime" element={<Anime />} />
         </Route>
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }

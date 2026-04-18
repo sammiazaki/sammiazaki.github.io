@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useDocumentHead } from "@/lib/seo";
 import {
   Github,
   Linkedin,
@@ -65,6 +66,13 @@ const NAV = [
 ];
 
 export default function Home() {
+  useDocumentHead({
+    title: null,
+    description:
+      "Sam Miazaki (Sajad Mirzababaei) — data science tech lead writing interactive, math-first tutorials on statistics, causal inference, and econometrics.",
+    path: "/",
+  });
+
   return (
     <motion.div
       className="mx-auto max-w-xl px-6 py-24 space-y-10"

@@ -10,6 +10,7 @@ dev: install notebooks
 	npx vite --open
 
 build: install notebooks
+	node scripts/generate-sitemap.mjs
 	npx vite build
 
 preview: build
