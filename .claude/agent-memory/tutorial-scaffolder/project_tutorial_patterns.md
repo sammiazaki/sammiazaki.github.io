@@ -27,7 +27,28 @@ Each tutorial lives at `src/tutorials/<slug>/<PascalCase>Tutorial.jsx` — one f
 </TutorialShell>
 ```
 
-`LESSONS` is a `const string[]` declared just above the default export function.
+`LESSONS` is a `const string[]` declared at module scope, not inside the default export.
+
+Two valid render-prop patterns are used in the codebase:
+
+**Pattern A — inline ternaries (used in panel-data, doubly-robust):**
+```jsx
+{(step) => (
+  <>
+    {step === 0 && <Step1 />}
+    {step === 1 && <Step2 />}
+  </>
+)}
+```
+
+**Pattern B — pre-built array (cleaner for 10+ steps):**
+```jsx
+const steps = [<Step1 />, <Step2 />, ...];
+// ...
+{(step) => steps[step]}
+```
+
+Pattern B avoids the JSX fan-out and is preferred for tutorials with 8+ steps.
 
 ## Import pattern
 
@@ -42,10 +63,21 @@ import {
   InfoBox,
   LabeledSlider,
   Tex,
+  CodeBlock,   // syntax-highlighted code with line numbers + copy button
 } from "@/components/tutorial";
 ```
 
 Path alias `@/` maps to `src/`.
+
+**CodeBlock convention:** Tutorials that show Python frequently define a one-line alias near the top of the file for readability:
+
+```jsx
+function PythonCode({ code }) {
+  return <CodeBlock code={code} language="python" />;
+}
+```
+
+Then render with `<PythonCode code={`import pandas as pd\n...`} />`. NEVER render code with raw `<pre>` or `<code>` blocks — `CodeBlock` is the single supported path for syntax highlighting, line numbers, and the copy button. See `src/tutorials/hypothesis-testing/HypothesisTestingTutorial.jsx` and `src/tutorials/causal-inference-overview/CausalInferenceOverviewTutorial.jsx` for the canonical usage.
 
 ## Registry entry format (registry.js)
 

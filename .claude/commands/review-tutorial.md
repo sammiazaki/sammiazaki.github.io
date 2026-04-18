@@ -53,10 +53,15 @@ For each `<Tex>` usage:
 - [ ] No unused imports
 - [ ] No missing imports (components used but not imported)
 
-### 8. Build check
+### 8. Code-block hygiene
+- [ ] No raw `<pre>` or `<code>` tags for multi-line code samples — these should be `CodeBlock` (or the `PythonCode` alias). Inline single-word code like `\`useMemo\`` in prose is fine; block-level code is not.
+- [ ] If the tutorial defines a local `PythonCode` alias, it matches the convention: `function PythonCode({ code }) { return <CodeBlock code={code} language="python" />; }`
+- [ ] `CodeBlock` is imported from `@/components/tutorial` when used
+
+### 9. Build check
 - Run `npx vite build --logLevel error` to verify the tutorial compiles without errors
 
-### 9. Content quality (advisory)
+### 10. Content quality (advisory)
 Flag but don't block:
 - Steps with no interactive elements (all text, no sliders/charts/quizzes)
 - Very long steps that might benefit from splitting

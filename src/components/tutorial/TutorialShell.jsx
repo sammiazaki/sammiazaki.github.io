@@ -79,9 +79,9 @@ export default function TutorialShell({
         <div className="mx-auto max-w-5xl px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 min-w-0">
             <Link
-              to="/noodlelab"
+              to="/chalkboard"
               className="flex-none text-slate-400 hover:text-slate-700 transition-colors"
-              aria-label="Back to Noodlelab"
+              aria-label="Back to Chalkboard"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>

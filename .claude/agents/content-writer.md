@@ -33,6 +33,7 @@ You write the **text content** for tutorial steps: explanations, InfoBoxes, Tex 
 - **Tex**: `display` for block equations, inline for symbols within text
 - **StatCard**: for computed values the user should track. Use the `formula` prop (LaTeX string) to show the mathematical definition on hover — e.g., `<StatCard label="Naive ATE" value={fmt(val)} formula="\\bar{Y}_1 - \\bar{Y}_0" />`. Always add `formula` for metrics that have a mathematical definition.
 - **LabeledSlider**: always include descriptive `label` and clear `displayValue`
+- **CodeBlock**: for any Python (or other-language) source code. Never use raw `<pre>` or `<code>` tags — they lack syntax highlighting, line numbers, and the copy button. Define a one-line alias near the top of the file: `function PythonCode({ code }) { return <CodeBlock code={code} language="python" />; }` then use `<PythonCode code={`...`} />`. Code goes in a template literal so backticks/quotes work naturally. Keep individual snippets ≤12 lines; split multi-step workflows into separate blocks with narrative between them. See `src/tutorials/hypothesis-testing/HypothesisTestingTutorial.jsx` for the canonical example.
 - Leave `{/* VIZ: description of needed chart */}` placeholder comments for visualizations the viz-designer should build
 - **Side-by-side layout for interactive steps:** Use `grid gap-6 md:grid-cols-[0.9fr_1.1fr]` on CardContent. Left column: text, sliders, StatCards, InfoBoxes. Right column: charts. Charts must NOT take a full-width row on their own. Chart titles use `text-[10px] text-slate-400`.
 

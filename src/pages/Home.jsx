@@ -29,7 +29,7 @@ const SOCIAL = [
 
 const NAV = [
   {
-    to: "/noodlelab",
+    to: "/chalkboard",
     icon: GraduationCap,
     title: "Chalkboard",
     desc: "Interactive tutorials on things I find fascinating",

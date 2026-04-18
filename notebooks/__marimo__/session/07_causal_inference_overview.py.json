@@ -1,0 +1,259 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.0",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "272600719417c25e616c4ed6a8d2a7f7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"causal-inference-a-map-of-the-territory\">Causal Inference \u2014 A Map of the Territory</h1>\n<h2 id=\"ten-chapters-of-facures-handbook-replicated-end-to-end\">Ten chapters of Facure's handbook, replicated end-to-end</h2>\n<span class=\"paragraph\">Companion notebook for the <em>Causal Inference: A Map of the Territory</em> tutorial.\nReplicates every numeric claim cited in the tutorial against the original\ndatasets from Matheus Facure's <em>Python Causality Handbook</em> (chapters 1\u201310).</span>\n<ul>\n<li><strong>Datasets</strong>: fetched directly from Facure's GitHub\n  (<code>matheusfacure/python-causality-handbook/.../data/</code>).</li>\n<li><strong>Methods covered</strong>: potential outcomes, RCT mean-difference, FWL\n  theorem, good vs bad controls, IV / LATE / 2SLS, nearest-neighbour\n  matching with bias correction.</li>\n<li><strong>Why replicate?</strong> Every number in the web tutorial is traceable to a\n  cell below. If a dataset changes upstream, this notebook is the\n  ground-truth check.</li>\n</ul>\n<hr /></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "19f555bcfe6e746ebc2b9f4b33750854",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "1e65e56566512d7bd4d5fa72412bc4d8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"ch-1-potential-outcomes-the-bias-decomposition\">Ch 1 \u00b7 Potential outcomes &amp; the bias decomposition</h2>\n<span class=\"paragraph\">Facure's 4-school tablet table is a <em>fictional</em> example used to make\nthe bias decomposition concrete. We reconstruct it to verify the algebra.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "05f1774d25e66c956d7715fb8e811c5f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "   i   y0   y1  t    y   te\n0  1  500  450  0  500  -50\n1  2  600  600  0  600    0\n2  3  800  600  1  600 -200\n3  4  700  750  1  750   50\nATE   = -50.0    ATT   = -75.0\nnaive = 125.0    bias = 200.0\nidentity: naive = ATT + bias  \u2192  -75.0 + 200.0 = 125.0\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "PKri",
+      "code_hash": "ff51b545a9290abb696b500c35c49828",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"ch-23-randomization-the-online-classroom-rct\">Ch 2\u20133 \u00b7 Randomization: the online-classroom RCT</h2>\n<span class=\"paragraph\">323 students, three formats (face-to-face, online, blended). Following\nFacure, we drop <code>format_blended == 1</code> and compare online vs face-to-face.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "2311d72a9421647ded26a7bc2ca89867",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "n_f2f=120   n_online=94\nmean f2f   = 78.5475\nmean online= 73.6353\nATE        = -4.9122\nSE(diff)   = 1.7674   z = -2.7793   p = 0.0054\n\nRegression form (matches by construction):\n==============================================================================\n                 coef    std err          t      P>|t|      [0.025      0.975]\n------------------------------------------------------------------------------\nIntercept     78.5475      1.113     70.563      0.000      76.353      80.742\nformat_ol     -4.9122      1.680     -2.925      0.004      -8.223      -1.601\n==============================================================================\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "9a750c2a7a94592c362dada5d1d9bc68",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"ch-5-regression-as-adjustment-fwl-ovb\">Ch 5 \u00b7 Regression as adjustment (FWL, OVB)</h2>\n<span class=\"paragraph\">Wage example. Facure reports <strong>5.36 %</strong> (short) \u2192 <strong>4.11 %</strong> (long)\nafter controlling for IQ, experience, tenure, age, race, region, urban,\nand family background.</span>\n<blockquote>\n<span class=\"paragraph\"><strong>Sample note.</strong> Facure runs <code>.dropna()</code> before fitting \u2014 this drops\nrows missing <code>brthord</code>, <code>meduc</code>, or <code>feduc</code>, shrinking <code>n</code> from 935\nto 663. Skipping this step gives a slightly different long-coef (~4.73 %).</span>\n</blockquote></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "1056176ce1dab41e00f5d86f2dd62452",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "short: coef(educ) = 0.0536  SE = 0.0075\nlong:  coef(educ) = 0.0411  SE = 0.0101\nbias  = short - long = 0.0125\nFWL (regress-on-residuals, manual) = 0.0411  [matches long coef]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "1dfa4341f96352eb4e72f4395c6afb6c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"ch-7-good-controls-vs-bad-controls\">Ch 7 \u00b7 Good controls vs bad controls</h2>\n<span class=\"paragraph\"><code>collections_email</code> is a randomized email campaign. Naive regression can't\ndetect the effect because <code>payments</code> is very noisy. Adding <strong>outcome\npredictors</strong> (<code>credit_limit</code>, <code>risk_score</code>) tightens the SE and reveals\nthe ~4.43 reais effect. The controls are neither confounders (treatment\nwas randomized) nor mediators \u2014 they just soak up outcome variance.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "f34ffe4d3c5339b71538619150ee622c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "naive:     coef = -0.6203  SE = 2.9415  p = 0.8330\n+controls: coef = +4.4304  SE = 2.1299  p = 0.0376\nSE reduction: 27.6%\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "emfo",
+      "code_hash": "e9f255263e2d65106c744cfe7bf4aca2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"ch-9-instrumental-variables-late\">Ch 9 \u00b7 Instrumental variables &amp; LATE</h2>\n<span class=\"paragraph\">Push-notification experiment: <code>push_assigned</code> is randomized but\n<code>push_delivered</code> is not \u2014 older phones fail to receive the push, and\nolder phones correlate with lower income, which confounds the\npurchase outcome.</span>\n<table>\n<thead>\n<tr>\n<th>estimand</th>\n<th>meaning</th>\n<th>expected sign</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>naive OLS</td>\n<td>biased by income</td>\n<td>upward</td>\n</tr>\n<tr>\n<td>ITT / reduced form</td>\n<td>effect of being <em>assigned</em></td>\n<td>attenuated</td>\n</tr>\n<tr>\n<td>first stage</td>\n<td>compliance rate</td>\n<td>positive</td>\n</tr>\n<tr>\n<td>LATE (2SLS)</td>\n<td>effect on <em>compliers</em></td>\n<td>the unbiased answer</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">Facure's \"naive OLS\" of <strong>27.60</strong> comes from a <em>joint</em> regression\n<code>Y ~ Z + T</code> where the Z-coef soaks up the assignment effect.\nA simple <code>Y ~ T</code> regression gives the more intuitive upward-biased\n13.93 \u2014 same story, smaller number.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "2c45ff0a03bf8dd7c52e1508b2f6a99b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Facure's OLS (Y ~ Z + T):\n                               Parameter Estimates                                \n==================================================================================\n                Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI\n----------------------------------------------------------------------------------\nIntercept          69.292     0.3624     191.22     0.0000      68.581      70.002\npush_assigned     -17.441     0.5702    -30.590     0.0000     -18.559     -16.324\npush_delivered     27.600     0.6124     45.069     0.0000      26.399      28.800\n==================================================================================\n\nSimple OLS (Y ~ T):  coef = 13.9314\n\nfirst stage (T~Z) = 0.7176\nreduced form (Y~Z) = 2.3636\nWald = RF / first  = 3.2938\n2SLS LATE          = 3.2938  SE = 0.7165\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "9c097e7f7e453888f4b0cc1165781564",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"ch-10-matching-bias-correction\">Ch 10 \u00b7 Matching &amp; bias correction</h2>\n<span class=\"paragraph\">Medicine-recovery dataset: <code>severity</code> is a strong confounder \u2014 doctors\ngive the drug to the sickest patients, so the naive comparison says the\ndrug makes recovery <em>slower</em>. Matching + bias correction recovers the\ntrue sign.</span>\n<span class=\"paragraph\">We replicate Facure's two-sided matching estimator:</span>\n<marimo-tex class=\"arithmatex\">||[\n\\widehat{ATE} = \\frac{1}{N}\\sum_{i=1}^{N} (2T_i - 1)\\big(Y_i - Y_{j(i)}\\big)\n||]</marimo-tex><span class=\"paragraph\">and the Abadie\u2013Imbens bias-corrected variant that subtracts\n<marimo-tex class=\"arithmatex\">||(\\hat{\\mu}_0(X_i) - \\hat{\\mu}_0(X_{j(i)})||)</marimo-tex> for each treated match\n(and symmetrically for controls).</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "2b83c08cb66f0af1bffa4ffbc88d4d09",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "naive diff (medication - no medication): +16.8958 days\nmatching ATE (raw):              -0.9954\nmatching ATE (bias-corrected):   -7.3627\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "aceb6f40ba976c16e1cbe058460018ef",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"key-numbers-one-page-summary\">Key numbers \u2014 one-page summary</h2>\n<table>\n<thead>\n<tr>\n<th style=\"text-align: right;\">Chapter</th>\n<th>Claim</th>\n<th>Replicated value</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align: right;\">Ch 1</td>\n<td>ATE / ATT / naive / bias</td>\n<td>\u221250 / \u221275 / +125 / +200</td>\n</tr>\n<tr>\n<td style=\"text-align: right;\">Ch 2</td>\n<td>online\u2212f2f difference, SE</td>\n<td>\u22124.91, 1.77</td>\n</tr>\n<tr>\n<td style=\"text-align: right;\">Ch 3</td>\n<td>p-value two-sided</td>\n<td>0.0054 (OLS p = 0.0038)</td>\n</tr>\n<tr>\n<td style=\"text-align: right;\">Ch 5</td>\n<td>short \u2192 long educ coef</td>\n<td>0.0536 \u2192 0.0411</td>\n</tr>\n<tr>\n<td style=\"text-align: right;\">Ch 7</td>\n<td>email effect, SE before/after controls</td>\n<td>+4.43, SE 2.94 \u2192 2.13</td>\n</tr>\n<tr>\n<td style=\"text-align: right;\">Ch 9</td>\n<td>OLS / ITT / first / LATE</td>\n<td>27.60 / 2.36 / 0.718 / 3.29</td>\n</tr>\n<tr>\n<td style=\"text-align: right;\">Ch 10</td>\n<td>naive / matching raw / matching BC</td>\n<td>+16.9 / \u22121.0 / \u22127.4</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">Every number above is regenerated from scratch by running the cells\nin this notebook \u2014 no hard-coded values.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

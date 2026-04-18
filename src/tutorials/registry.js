@@ -134,6 +134,20 @@ const tutorials = [
     },
     component: lazy(() => import("./panel-data/PanelDataTutorial.jsx")),
   },
+  {
+    slug: "causal-inference-overview",
+    title: "Causal Inference: A Map of the Territory",
+    description:
+      "An overview tutorial covering the core ideas of causal inference — potential outcomes, randomization, DAGs, regression adjustment, IV, and matching — synthesized from Facure's Python Causality Handbook (Ch 1–10) and Cunningham's Mixtape. Ends with a tour of the Python causal-inference library ecosystem.",
+    date: "2026-04-18",
+    tags: ["causal inference", "potential outcomes", "DAGs", "instrumental variables", "matching", "python libraries"],
+    source: {
+      title: "Causal Inference for the Brave and True (Ch 1–10)",
+      author: "Matheus Facure",
+      url: "https://matheusfacure.github.io/python-causality-handbook/01-Introduction-To-Causality.html",
+    },
+    component: lazy(() => import("./causal-inference-overview/CausalInferenceOverviewTutorial.jsx")),
+  },
 ];
 
 export default tutorials;

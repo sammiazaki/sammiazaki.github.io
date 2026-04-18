@@ -17,11 +17,21 @@ No test runner or linter is configured.
 
 Personal website for Sam Miazaki, deployed to GitHub Pages. React 18 + Vite SPA using HashRouter, styled with Tailwind CSS.
 
-**Routing:** `HashRouter` in `App.jsx` — all pages nest under `BlogLayout` (sticky nav + footer). The site has two sections: a landing page and **Noodlelab**, an interactive statistics/causal-inference tutorial hub.
+**Routing:** `HashRouter` in `App.jsx` — all pages nest under `BlogLayout` (sticky nav + footer). The site has two sections: a landing page and **Chalkboard**, an interactive statistics/causal-inference tutorial hub.
 
 **Tutorial system:** Each tutorial lives in `src/tutorials/<slug>/` as a single component file. Tutorials are registered in `src/tutorials/registry.js` with metadata (slug, title, description, date, tags, optional source) and a `lazy()` import. `TutorialPage.jsx` resolves the slug from the URL and renders the matching component inside a `<Suspense>` boundary.
 
-**TutorialShell pattern:** Tutorials use `TutorialShell` (from `src/components/tutorial/`) which provides step-based navigation with a progress sidebar. The shell takes a `lessons` array (step titles) and a render-prop `children(step)` that receives the current step index. Shared building blocks exported from `src/components/tutorial/index.js`: `StepContent`, `QuizCard`, `StatCard` (supports optional `formula` prop — a LaTeX string shown as a hover tooltip), `InfoBox`, `LabeledSlider`, `Tex` (KaTeX wrapper).
+**TutorialShell pattern:** Tutorials use `TutorialShell` (from `src/components/tutorial/`) which provides step-based navigation with a progress sidebar. The shell takes a `lessons` array (step titles) and a render-prop `children(step)` that receives the current step index. Shared building blocks exported from `src/components/tutorial/index.js`: `StepContent`, `QuizCard`, `StatCard` (supports optional `formula` prop — a LaTeX string shown as a hover tooltip), `InfoBox`, `LabeledSlider`, `Tex` (KaTeX wrapper), `CodeBlock` (syntax-highlighted Python code with line numbers + copy button).
+
+**Code blocks:** Never use raw `<pre>` / `<code>` tags for code samples. Always use `CodeBlock`. Tutorials that show Python frequently define a one-line alias near the top of the file:
+
+```jsx
+function PythonCode({ code }) {
+  return <CodeBlock code={code} language="python" />;
+}
+```
+
+Then render with `<PythonCode code={`import pandas as pd\n...`} />`. See `src/tutorials/hypothesis-testing/HypothesisTestingTutorial.jsx` for the canonical example.
 
 **Adding a new tutorial:** Create `src/tutorials/<slug>/<Name>Tutorial.jsx` using the TutorialShell pattern, then add an entry to `registry.js`.
 

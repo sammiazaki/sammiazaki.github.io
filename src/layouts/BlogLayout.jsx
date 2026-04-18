@@ -22,7 +22,7 @@ export default function BlogLayout() {
             Sam Miazaki
           </Link>
           <nav className="flex items-center gap-6 text-sm">
-            <NavLink to="/noodlelab">Chalkboard</NavLink>
+            <NavLink to="/chalkboard">Chalkboard</NavLink>
             <a
               href="/notebooks/"
               className="text-slate-500 hover:text-slate-900 transition-colors"
