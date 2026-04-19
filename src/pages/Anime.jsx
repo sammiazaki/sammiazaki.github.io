@@ -333,7 +333,7 @@ function AnimeCard({ anime, posterUrl }) {
 /* ── page ───────────────────────────────────────────────────────────── */
 
 export default function Anime() {
-  const allAnime = useMemo(() => [...WATCHING, ...ANIME], []);
+  const allAnime = useMemo(() => [...WATCHING, ...PLANNED, ...ANIME], []);
   const posters = useAnimePosters(allAnime);
   const stats = useMemo(() => computeStats([...ANIME, ...WATCHING]), []);
 
@@ -387,6 +387,23 @@ export default function Anime() {
             className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
           >
             {WATCHING.map((a) => (
+              <AnimeCard key={a.malId || a.title} anime={a} posterUrl={a.malId ? posters[a.malId] : null} />
+            ))}
+          </motion.div>
+        </motion.section>
+      )}
+
+      {/* up next */}
+      {PLANNED.length > 0 && (
+        <motion.section variants={fade} className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-800">
+            Up Next
+          </h2>
+          <motion.div
+            variants={stagger}
+            className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+          >
+            {PLANNED.map((a) => (
               <AnimeCard key={a.malId || a.title} anime={a} posterUrl={a.malId ? posters[a.malId] : null} />
             ))}
           </motion.div>
