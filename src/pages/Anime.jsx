@@ -7,8 +7,15 @@ import { useDocumentHead } from "@/lib/seo";
 /* ── data ───────────────────────────────────────────────────────────── */
 
 const WATCHING = [
-  { title: "Hell's Paradise", malId: 46569, mal: "46569/Jigokuraku", episodes: 13, genres: ["Action", "Supernatural"] },
+  { title: "Made in Abyss", malId: 34599, mal: "34599/Made_in_Abyss", episodes: 13, genres: ["Adventure", "Dark Fantasy"] },
   { title: "To Your Eternity", malId: 41025, mal: "41025/Fumetsu_no_Anata_e", episodes: 60, genres: ["Adventure", "Supernatural"] },
+];
+
+const PLANNED = [
+  { title: "Steins;Gate", malId: 9253, mal: "9253/Steins_Gate", episodes: 24, genres: ["Sci-Fi", "Thriller"] },
+  { title: "Code Geass: Lelouch of the Rebellion R2", malId: 2904, mal: "2904/Code_Geass__Hangyaku_no_Lelouch_R2", episodes: 25, genres: ["Action", "Drama"] },
+  { title: "The Seven Deadly Sins", malId: 23755, mal: "23755/Nanatsu_no_Taizai", episodes: 24, genres: ["Action", "Fantasy"] },
+  { title: "Gintama", malId: 918, mal: "918/Gintama", episodes: 201, genres: ["Comedy", "Action"] },
 ];
 
 const ANIME = [
@@ -31,6 +38,7 @@ const ANIME = [
   { title: "Fate/strange Fake", malId: 55830, mal: "55830/Fate_strange_Fake", episodes: 13, genres: ["Action", "Fantasy"] },
   { title: "Frieren: Beyond Journey's End", malId: 52991, mal: "52991/Frieren__Beyond_Journey_s_End", episodes: 38, genres: ["Adventure", "Fantasy"] },
   { title: "Fullmetal Alchemist: Brotherhood", malId: 5114, mal: "5114/Fullmetal_Alchemist__Brotherhood", episodes: 64, genres: ["Action", "Fantasy"] },
+  { title: "Hell's Paradise", malId: 46569, mal: "46569/Jigokuraku", episodes: 26, genres: ["Action", "Supernatural"] },
   { title: "Hunter x Hunter", malId: 11061, mal: "11061/Hunter_x_Hunter_2011", episodes: 148, genres: ["Action", "Adventure"] },
   { title: "Jujutsu Kaisen", malId: 40748, mal: "40748/Jujutsu_Kaisen", episodes: 59, genres: ["Action", "Supernatural"] },
   { title: "Mushoku Tensei", malId: 39535, mal: "39535/Mushoku_Tensei__Isekai_Ittara_Honki_Dasu", episodes: 48, genres: ["Fantasy", "Isekai"] },
