@@ -5,19 +5,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-make dev        # Start dev server (installs deps first, opens browser)
-make build      # Production build to dist/
+make dev        # Install deps + export notebooks + start dev server (opens browser)
+make build      # Install deps + export notebooks + production build to dist/
 make preview    # Build + preview production locally
-npm run dev     # Dev server without auto-install
+make notebooks  # Export marimo notebooks (notebooks/0*.py) → public/notebooks/*.html
+make marimo     # Open marimo editor in notebooks/
+npm run dev     # Dev server without auto-install (skips notebook export)
+npm run build   # Vite build only — assumes notebooks were exported separately
 ```
 
 No test runner or linter is configured.
+
+**Notebooks pipeline:** `notebooks/0*.py` are marimo notebooks managed via `uv` (see `notebooks/pyproject.toml`, `.venv/`). `make notebooks` exports each to a static HTML file under `public/notebooks/<name>.html` and rebuilds `public/notebooks/index.html` (driven by `notebooks/build_index.py`). Both `make dev` and `make build` depend on this target, so changes to a `.py` notebook are reflected on the next dev/build run. The "Workbench" nav entry on the site links to `/notebooks/` (a static directory served alongside the SPA).
 
 ## Architecture
 
 Personal website for Sam Miazaki, deployed to GitHub Pages. React 18 + Vite SPA using HashRouter, styled with Tailwind CSS.
 
-**Routing:** `HashRouter` in `App.jsx` — all pages nest under `BlogLayout` (sticky nav + footer). The site has two sections: a landing page and **Chalkboard**, an interactive statistics/causal-inference tutorial hub.
+**Routing:** `BrowserRouter` in `App.jsx` — all pages nest under `BlogLayout` (sticky nav + footer). The site has two sections: a landing page and **Chalkboard**, an interactive statistics/causal-inference tutorial hub. Deep links work on GitHub Pages via `public/404.html`, which encodes the path into a query string that `index.html` decodes back into a real URL before React Router mounts.
 
 **Tutorial system:** Each tutorial lives in `src/tutorials/<slug>/` as a single component file. Tutorials are registered in `src/tutorials/registry.js` with metadata (slug, title, description, date, tags, optional source) and a `lazy()` import. `TutorialPage.jsx` resolves the slug from the URL and renders the matching component inside a `<Suspense>` boundary.
 

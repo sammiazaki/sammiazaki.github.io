@@ -53,6 +53,7 @@ export function useDocumentHead({
   image = DEFAULT_IMAGE,
   type = "website",
   jsonLd,
+  noindex = false,
 } = {}) {
   useEffect(() => {
     const url = `${SITE_URL}${path}`;
@@ -72,13 +73,25 @@ export function useDocumentHead({
     setMeta('meta[name="twitter:description"]', "content", description);
     setMeta('meta[name="twitter:image"]', "content", image);
 
+    const existingRobots = document.head.querySelector('meta[name="robots"]');
+    if (noindex) {
+      if (!existingRobots) {
+        const m = document.createElement("meta");
+        m.setAttribute("name", "robots");
+        m.setAttribute("content", "noindex, nofollow");
+        document.head.appendChild(m);
+      } else {
+        existingRobots.setAttribute("content", "noindex, nofollow");
+      }
+    } else if (existingRobots) {
+      existingRobots.remove();
+    }
+
     setJsonLd("ld-page", jsonLd);
 
     return () => {
-      // Leave tags in place on unmount; the next page will overwrite them.
-      // Only clean up the page-specific JSON-LD so we don't leak stale schemas.
       const s = document.getElementById("ld-page");
       if (s) s.remove();
     };
-  }, [title, description, path, image, type, JSON.stringify(jsonLd)]);
+  }, [title, description, path, image, type, noindex, JSON.stringify(jsonLd)]);
 }

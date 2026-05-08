@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Smooth in-page anchor scrolling, but only for users who haven't asked for less motion. */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Respect prefers-reduced-motion globally — kill animations and transitions. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Improve default focus indication so keyboard users can always see where they are. */
+  :focus-visible {
+    outline: 2px solid theme("colors.slate.500");
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Better text rendering on retina displays. */
+  body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;

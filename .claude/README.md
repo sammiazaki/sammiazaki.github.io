@@ -43,12 +43,12 @@ Hooks run automatically — you don't invoke them. They guard against common mis
 
 ### Pre-commit build check
 **Trigger:** Before any `git commit` command
-**What it does:** Runs `npx vite build` and **blocks the commit** if the build fails.
+**What it does:** Inspects the staged file list. If anything matches `*.{js,jsx,ts,tsx,css,html,json,mjs,cjs}` it runs `npx vite build` and **blocks the commit** if the build fails. Pure-text edits (CLAUDE.md, README, agent prompts, hook scripts) skip the build entirely so prose-only commits stay fast.
 **File:** `.claude/hooks/pre-commit-build.sh`
 
 ### Registry reminder
 **Trigger:** After any `Write` to a file matching `src/tutorials/<slug>/*.jsx`
-**What it does:** Checks if the tutorial's slug exists in `registry.js`. Prints a warning if it's missing — doesn't block.
+**What it does:** Greps `registry.js` for `slug: '<slug>'` (or double-quoted variant). Prints a warning if it's missing — doesn't block.
 **File:** `.claude/hooks/check-registry.sh`
 
 ## Permissions

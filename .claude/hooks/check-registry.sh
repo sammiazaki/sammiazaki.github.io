@@ -17,7 +17,7 @@ fi
 
 REGISTRY="$CLAUDE_PROJECT_DIR/src/tutorials/registry.js"
 
-if ! grep -q "\"$SLUG\"" "$REGISTRY" 2>/dev/null; then
+if ! grep -qE "slug:[[:space:]]*['\"]${SLUG}['\"]" "$REGISTRY" 2>/dev/null; then
   echo "Warning: tutorial slug \"$SLUG\" not found in registry.js. Remember to add it to src/tutorials/registry.js."
 fi
 

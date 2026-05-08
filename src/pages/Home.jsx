@@ -41,6 +41,7 @@ const NAV = [
     icon: Wrench,
     title: "Workbench",
     desc: "Marimo notebooks with real data",
+    external: true,
   },
   {
     to: "https://sammiazaki.substack.com",

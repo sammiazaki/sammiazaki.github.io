@@ -25,8 +25,8 @@ When given a topic (and optionally a reference URL), execute these steps in orde
 This discovery step is critical — never assume the pattern; always verify from the actual codebase.
 
 ### Step 3: Create the Tutorial Folder
-- Create the new folder in the same parent directory as existing tutorials.
-- Match the exact file structure of existing tutorials (e.g., `index.js`, `styles.module.css`, or whatever the convention is).
+- Create the new folder in `src/tutorials/<slug>/` alongside the other tutorials.
+- The convention is **one file per tutorial**: `src/tutorials/<slug>/<PascalName>Tutorial.jsx`. There is no `index.js`, no per-tutorial CSS module, and no nested directory — sibling tutorials all follow this exact shape (see `src/tutorials/panel-data/PanelDataTutorial.jsx`, `src/tutorials/ci-overlap/CIOverlapTutorial.jsx`).
 
 ### Step 4: Write the Component
 - Follow the TutorialShell pattern exactly as used by sibling tutorials.
