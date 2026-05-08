@@ -91,3 +91,25 @@ All inline SVG charts in tutorials must follow these conventions for visual cons
 - `<CardContent className="space-y-4 text-slate-700">` — consistent inner spacing
 - StatCard grids: `grid gap-3 md:grid-cols-2` or `md:grid-cols-3`
 - Quiz step: `<StepContent className="grid gap-4 md:grid-cols-2">` with QuizCards directly (no Card wrapper)
+
+## Responsive design — verify before shipping
+
+Before reporting any tutorial or UI change as done, audit responsive behavior at three widths: ~375px (phone), ~768px (tablet portrait), ~1024px+ (desktop). Tailwind breakpoints used here: `sm:` 640, `md:` 768, `lg:` 1024, `xl:` 1280.
+
+### Common responsive failure modes to check
+
+- **Inline SVG charts/timelines**: SVG text scales with the SVG itself. `text-[10px]` in a viewBox 1100+ wide becomes ~3px on a 375px screen — illegible. Either gate the SVG behind `hidden lg:block` and provide a vertical static-list fallback below, or wrap in `overflow-x-auto` with intrinsic width so users scroll horizontally. Don't rely on a phone user to read 3px labels.
+- **Code blocks (`<pre>`, `<code>`)**: always include `overflow-x-auto`. Long lines silently overflow the page otherwise.
+- **`<Tex display>`**: already has `overflow-x-auto` in `Tex.jsx`, so long display-mode formulas scroll safely. Inline `<Tex>` inside narrow containers (e.g., a card column at 320px) can still overflow — keep inline math short.
+- **Grids**: prefer `grid gap-N md:grid-cols-2/3`. The default `grid-cols-1` makes them stack on mobile. Two-column "side-by-side" patterns (e.g., `md:grid-cols-[0.9fr_1.1fr]`) stack vertically below `md:` automatically — verify the stacked order makes sense.
+- **Hover-only interactions**: `title` tooltips, hover panels, and `:hover` highlights don't fire on touch. Provide an alternative — a tap-toggle, an always-visible static fallback, or an expanded list on mobile.
+- **Fixed pixel widths**: anything like `w-[800px]` or hard-coded inline `width={...}` on layout containers will break narrow screens. Prefer `w-full`, `max-w-*`, or aspect-ratio approaches.
+- **Sticky headers and floating bottom bars**: `TutorialShell` already handles these, but if you add custom sticky elements, test that they don't cover content at all viewport heights.
+
+### Quick verification checklist
+
+When wrapping up a tutorial or UI task:
+
+1. Run the dev server and open with browser DevTools device emulation, or mentally walk through the three breakpoints above.
+2. Confirm: charts/timelines remain legible or gracefully fall back; pre/code blocks scroll horizontally rather than expanding the page; grids stack; nothing relies solely on hover.
+3. If interactive verification isn't possible, say so explicitly in the task report — don't claim "responsive" without checking.

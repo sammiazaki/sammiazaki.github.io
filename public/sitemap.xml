@@ -79,6 +79,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://sammiazaki.github.io/chalkboard/complexity-theory</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://sammiazaki.github.io/chalkboard/causal-inference-overview</loc>
     <lastmod>2026-04-18</lastmod>
     <changefreq>monthly</changefreq>

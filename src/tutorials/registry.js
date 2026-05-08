@@ -135,6 +135,22 @@ const tutorials = [
     component: lazy(() => import("./panel-data/PanelDataTutorial.jsx")),
   },
   {
+    slug: "complexity-theory",
+    title: "From Hilbert to NP-Complete",
+    description:
+      "A foundations tour of computational complexity — from the Entscheidungsproblem and Turing's 1936 answer, through Cook–Levin and Karp's 21 problems, to the three barriers that explain why P vs NP is so hard. With an animated timeline of the field's history.",
+    date: "2026-05-08",
+    tags: [
+      "complexity theory",
+      "algorithms",
+      "P vs NP",
+      "Cook-Levin",
+      "Turing",
+      "computer science",
+    ],
+    component: lazy(() => import("./complexity-theory/ComplexityTheoryTutorial.jsx")),
+  },
+  {
     slug: "causal-inference-overview",
     title: "Causal Inference: A Map of the Territory",
     description:
