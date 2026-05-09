@@ -1,6 +1,11 @@
+import { lazy, Suspense, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useDocumentHead } from "@/lib/seo";
+
+const ButterflyDuet = lazy(() =>
+  import("@/components/butterfly").then((m) => ({ default: m.ButterflyDuet }))
+);
 import {
   Github,
   Linkedin,
@@ -74,27 +79,46 @@ export default function Home() {
     path: "/",
   });
 
+  const titleRef = useRef(null);
+  const avatarRef = useRef(null);
+  const sayHiRef = useRef(null);
+  const chalkboardRef = useRef(null);
+  const socialRefs = useRef([]);
+
   return (
-    <motion.div
-      className="mx-auto max-w-xl px-6 py-24 space-y-10"
-      variants={stagger}
-      initial="initial"
-      animate="animate"
-    >
+    <>
+      <Suspense fallback={null}>
+        <ButterflyDuet
+          titleRef={titleRef}
+          avatarRef={avatarRef}
+          sayHiRef={sayHiRef}
+          chalkboardRef={chalkboardRef}
+          socialRefs={socialRefs}
+        />
+      </Suspense>
+      <motion.div
+        className="relative mx-auto max-w-xl px-6 py-24 space-y-10"
+        style={{ zIndex: 1 }}
+        variants={stagger}
+        initial="initial"
+        animate="animate"
+      >
       {/* intro */}
       <motion.header variants={fade} className="space-y-4">
         <img
+          ref={avatarRef}
           src="/avatar.png"
           alt="Sam Miazaki"
           className="w-24 h-24 rounded-full object-cover border-2 border-slate-200 shadow-sm"
         />
-        <h1 className="text-4xl font-bold tracking-tight">Sam Miazaki</h1>
+        <h1 ref={titleRef} className="text-4xl font-bold tracking-tight">Sam Miazaki</h1>
         <p className="text-[15px] text-slate-500 leading-relaxed">
           Real name Sajad Mirzababaei. Data scientist who loves AI for making
           life genuinely easier in so many ways. Always looking to meet people
           who share interests in movies, music, anime, economics, AI, or
           business — if that's you,{" "}
           <a
+            ref={sayHiRef}
             href="mailto:ss.mirzababaei@gmail.com"
             className="text-slate-700 underline underline-offset-2 decoration-slate-300 hover:decoration-slate-500 transition-colors"
           >
@@ -103,9 +127,12 @@ export default function Home() {
           .
         </p>
         <div className="flex gap-3 pt-1">
-          {SOCIAL.map((s) => (
+          {SOCIAL.map((s, i) => (
             <a
               key={s.label}
+              ref={(el) => {
+                socialRefs.current[i] = el;
+              }}
               href={s.href}
               target={s.href.startsWith("mailto") ? undefined : "_blank"}
               rel={s.href.startsWith("mailto") ? undefined : "noopener noreferrer"}
@@ -140,9 +167,11 @@ export default function Home() {
             </>
           );
 
+          const navRef = item.title === "Chalkboard" ? chalkboardRef : undefined;
+
           if (item.internal) {
             return (
-              <Link key={item.title} to={item.to} className={cls}>
+              <Link key={item.title} to={item.to} className={cls} ref={navRef}>
                 {inner}
               </Link>
             );
@@ -154,12 +183,14 @@ export default function Home() {
               target={item.external ? "_blank" : undefined}
               rel={item.external ? "noopener noreferrer" : undefined}
               className={cls}
+              ref={navRef}
             >
               {inner}
             </a>
           );
         })}
       </motion.nav>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
