@@ -51,9 +51,10 @@ function findWingNodes(scene) {
 /* -------------------------------------------------------------------------- */
 
 function ButterflyMesh({ url, poseRef }) {
+  const headingGroupRef = useRef();
   const baseTiltGroupRef = useRef();
   const perspectiveRef = useRef();
-  const { scene } = useGLTF(url);
+  const { scene } = useGLTF(url, "/draco/");
 
   const wings = useMemo(() => findWingNodes(scene), [scene]);
   useEffect(() => {
@@ -81,6 +82,19 @@ function ButterflyMesh({ url, poseRef }) {
       const r = baseTiltGroupRef.current.rotation;
       r.x += (pose.baseTilt - r.x) * lerp * 0.6;
     }
+    // Heading rotation around the camera axis (screen Z) — keeps the
+    // butterfly's painted pixels inside the canvas viewport instead of
+    // overflowing the 96×96 wrapper that a CSS rotate() would.
+    if (headingGroupRef.current) {
+      const headingRad = -((pose.headingDeg ?? 0) * Math.PI) / 180;
+      headingGroupRef.current.rotation.z = headingRad;
+      const targetScale = pose.scale ?? 1;
+      const s = headingGroupRef.current.scale;
+      const sLerp = 1 - Math.exp(-delta * 6);
+      s.x += (targetScale - s.x) * sLerp;
+      s.y = s.x;
+      s.z = s.x;
+    }
 
     // Wing flap from the shared flap phase (so it's coupled with body bob)
     if (!wings.left.length && !wings.right.length) return;
@@ -98,16 +112,18 @@ function ButterflyMesh({ url, poseRef }) {
   return (
     <Bounds fit clip margin={1.5}>
       <Center>
-        <group ref={baseTiltGroupRef} rotation={[-Math.PI / 2, 0, 0]}>
-          <group ref={perspectiveRef}>
-            <Float
-              speed={1.0}
-              rotationIntensity={0.08}
-              floatIntensity={0.2}
-              floatingRange={[-0.03, 0.03]}
-            >
-              <primitive object={scene} />
-            </Float>
+        <group ref={headingGroupRef}>
+          <group ref={baseTiltGroupRef} rotation={[-Math.PI / 2, 0, 0]}>
+            <group ref={perspectiveRef}>
+              <Float
+                speed={1.0}
+                rotationIntensity={0.08}
+                floatIntensity={0.2}
+                floatingRange={[-0.03, 0.03]}
+              >
+                <primitive object={scene} />
+              </Float>
+            </group>
           </group>
         </group>
       </Center>
@@ -164,4 +180,4 @@ export default function Butterfly({
   );
 }
 
-useGLTF.preload?.("/butterfly.glb");
+useGLTF.preload?.("/butterfly.glb", "/draco/");

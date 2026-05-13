@@ -330,12 +330,13 @@ function PhysicsButterfly({
   overlayRef,
 }) {
   // Motion values for transform — driven from the physics loop, no React
-  // re-renders per frame.
+  // re-renders per frame. Only translation lives on the wrapper; rotation and
+  // scale go into the Three.js scene so painted pixels stay inside the
+  // canvas viewport (preventing the 96×96 layout box from being overflowed at
+  // off-axis rotations).
   const halfSize = size / 2;
   const mvX = useMotionValue(homePerch.x - halfSize);
   const mvY = useMotionValue(homePerch.y - halfSize);
-  const mvRotate = useMotionValue(0);
-  const mvScale = useMotionValue(1);
   const isBehindRef = useRef(false);
 
   // 3D pose (read by the Butterfly canvas inside)
@@ -347,6 +348,8 @@ function PhysicsButterfly({
     flapPhase: 0,
     flapAmplitude: 0.45,
     responsive: false,
+    headingDeg: 0,
+    scale: 1,
   });
 
   // Physics state
@@ -677,10 +680,11 @@ function PhysicsButterfly({
     mvX.set(phys.pos.x - halfSize);
     mvY.set(phys.pos.y - halfSize + bobOffset);
     // Body heading in screen-space — atan2 gives angle from +x, butterfly's
-    // default head direction is "up" (-y) so we add 90°.
+    // default head direction is "up" (-y) so we add 90°. Stashed on poseRef
+    // and applied as a 3D rotation around the camera axis inside the canvas.
     const headingDeg = (phys.heading * 180) / Math.PI + 90;
-    mvRotate.set(headingDeg);
-    mvScale.set(1 + phys.depth * 0.35);
+    poseRef.current.headingDeg = headingDeg;
+    poseRef.current.scale = 1 + phys.depth * 0.35;
 
     // Behind / over elements: z-index switches with hysteresis when depth
     // crosses thresholds. depth < -0.2 → behind cards. depth > -0.05 → in front.
@@ -712,8 +716,6 @@ function PhysicsButterfly({
       style={{
         x: mvX,
         y: mvY,
-        rotate: mvRotate,
-        scale: mvScale,
         width: size,
         height: size,
         willChange: "transform",
